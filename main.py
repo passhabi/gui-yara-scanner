@@ -1,51 +1,31 @@
-# import tkinter as tk
-import customtkinter as customtk
+import customtkinter as ctk
+from forms import Form1, Form2
 
-
-class EventHandler:
+class App(ctk.CTk):
     def __init__(self):
-        pass
+        super().__init__()
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
-    def click_ready(self):
-        print("btn ready has been clicked!")
+        self.title("Hoorad CyberSecurity")
+        self.geometry("500x300")
 
-    def click_cancel(self):
-        print("btn cancel has been clicked!")
-        exit()
+        # Initialize forms.py
+        self.form1 = Form1(self)
+        self.form2 = Form2(self)
 
+        # Show Form 1 initially
+        self.show_form1()
 
-class UIMaker:
-    def __init__(self, event_handler: EventHandler):
-        self.event_handler = event_handler
-        self.start_form = customtk.CTk()
-        self.start_form.mainloop()
+    def show_form1(self):
+        self.form2.grid_remove()
+        self.form1.grid()
 
-    def make_form1(self):
-        # form1:
-        self.start_form.title('Hoorad CyberSecurity')
-        self.start_form.geometry("600x300")
-        self.start_form.grid_rowconfigure((0, 1), weight=1)
-        self.start_form.grid_columnconfigure((0, 1, 2), weight=1)
-        self.make_labels()
-        self.make_buttons()
-
-        #form2
+    def show_form2(self):
+        self.form1.grid_remove()
+        self.form2.grid()
 
 
-    def make_buttons(self):
-        # cancel button:
-        btn_cancel = customtk.CTkButton(self.start_form, text="Cancel", command=self.event_handler.click_cancel)
-        btn_cancel.grid(row=1, column=1, padx=20, pady=20, sticky='e')
-
-        # ready button:
-        btn_ready = customtk.CTkButton(self.start_form, text="ready!", command=self.event_handler.click_ready)
-        btn_ready.grid(row=1, column=2, padx=20, pady=20)
-
-    def make_labels(self):
-        welcome_label = customtk.CTkLabel(self.start_form, text="Welcome to Hoorad cybersecurity system check.",
-                                          fg_color="transparent")
-        welcome_label.grid(row=0, column=0, padx=20, pady=20, columnspan=2)
-
-
-if __name__ == '__main__':
-    ui_maker = UIMaker(EventHandler())
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
