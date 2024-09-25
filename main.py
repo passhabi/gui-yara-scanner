@@ -16,7 +16,9 @@ class UserIterface(ctk.CTk):
         self.geometry("650x200")
         self.minsize(650, 200)
         ctk.set_appearance_mode("Dark")  # default
-        self.iconbitmap("tiny.bmp")
+        self.iconbitmap("tiny_icon.ico")
+        
+        # self.tk.call('wm', 'iconphoto', self._w, logo)
         self.default_font = ctk.CTkFont("Tahoma")
 
         self.columnconfigure(0, weight=1)
@@ -25,7 +27,6 @@ class UserIterface(ctk.CTk):
         logo = ctk.CTkImage(
             dark_image=Image.open("logo.png"), light_image=Image.open("logo.png"), size=(256, 61)
         )
-
         logo_label = ctk.CTkLabel(
             self, image=logo, text=""
         )  # display image with a CTkLabel

@@ -9,9 +9,6 @@ class Form1(ctk.CTkFrame):
         self.grid(row=1, column=0, padx=0,  pady=0, sticky='esw')
         self.grid_rowconfigure((0,1), weight=1)
         self.grid_columnconfigure((0,1,2), weight=1)
-        
-        print(app)
-        print(app)
                 
         welcome_label = ctk.CTkLabel(self,
                                           font=app.default_font,
