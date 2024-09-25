@@ -4,11 +4,15 @@ from forms import Form1, Form2
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
 
         self.title("Hoorad CyberSecurity")
-        self.geometry("500x300")
+        self.geometry("650x200")
+        self.minsize(650, 200)
+        ctk.set_appearance_mode("system")  # default
+
+        
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
 
         # Initialize forms.py
         self.form1 = Form1(self)
