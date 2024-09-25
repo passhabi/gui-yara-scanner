@@ -1,5 +1,5 @@
 import customtkinter as ctk
-
+from ctk_widget import CTkMeter
 
 class Form1(ctk.CTkFrame):
     def __init__(self, app):
@@ -14,11 +14,11 @@ class Form1(ctk.CTkFrame):
             self,
             justify="right",
             font=app.default_font,
-            text="به سیستم بررسی امنیتی هووراد خوش‌امدید. برای آغاز بررسی روی کلید شروع کلیک کنید.",
+            text=".به سیستم بررسی امنیتی هووراد خوش‌امدید. برای آغاز بررسی روی کلید شروع کلیک کنید",
+            anchor='e'
             # wraplength=350
-            anchor="e"
         )
-        
+
         self.bind('<Configure>', lambda x: welcome_label.configure(wraplength=x.width - 250))
 
         welcome_label.grid(row=0, column=2, pady=12, padx=20)
@@ -35,8 +35,10 @@ class Form2(ctk.CTkFrame):
         super().__init__(master)
         self.master = master
 
-        label = ctk.CTkLabel(self, text="This is Form 2")
-        label.grid(row=0, column=0, pady=12, padx=10)
-
+        progress_wgt = CTkMeter(self, background='#282424')
+        progress_wgt.grid(row=0, column=0)
+        
+        progress_wgt.set(20)
+        
         button2 = ctk.CTkButton(self, text="Back", command=self.master.show_form1)
         button2.grid(row=1, column=0, pady=12, padx=10)

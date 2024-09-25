@@ -17,7 +17,6 @@ class UserIterface(ctk.CTk):
         ctk.set_appearance_mode("dark")  # default
         self.iconbitmap("tiny_icon.ico")
         
-        # self.tk.call('wm', 'iconphoto', self._w, logo)
         self.default_font = ctk.CTkFont("Tahoma")
 
         self.columnconfigure(0, weight=1)
