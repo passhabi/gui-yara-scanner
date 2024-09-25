@@ -9,13 +9,12 @@ class UserIterface(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        print(self.__dir__())
 
         # treat windows, app or root as self!
         self.title("Hoorad CyberSecurity")
         self.geometry("650x200")
         self.minsize(650, 200)
-        ctk.set_appearance_mode("Dark")  # default
+        ctk.set_appearance_mode("dark")  # default
         self.iconbitmap("tiny_icon.ico")
         
         # self.tk.call('wm', 'iconphoto', self._w, logo)
