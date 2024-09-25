@@ -11,9 +11,12 @@ class UserIterface(ctk.CTk):
         super().__init__()
 
         # treat windows, app or root as self!
+        
+        window_size = 600, 680
+        self.geometry(f'{window_size[0]}x{window_size[1]}') # eg."600x800"
+        self.minsize(*window_size)
+        
         self.title("Hoorad CyberSecurity")
-        self.geometry("650x200")
-        self.minsize(650, 200)
         ctk.set_appearance_mode("dark")  # default
         self.iconbitmap("tiny_icon.ico")
         

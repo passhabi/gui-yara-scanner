@@ -35,7 +35,7 @@ class Form2(ctk.CTkFrame):
         super().__init__(master)
         self.master = master
 
-        progress_wgt = CTkMeter(self, background='#282424')
+        progress_wgt = CTkMeter(self, background='#242424')
         progress_wgt.grid(row=0, column=0)
         
         progress_wgt.set(20)
