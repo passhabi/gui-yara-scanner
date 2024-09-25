@@ -1,15 +1,19 @@
 import customtkinter as ctk
+from tkinter import *
+from tkinter import ttk
 from forms import Form1, Form2
 
-class App(ctk.CTk):
+class UserIterface(ctk.CTk):    
+    
     def __init__(self):
         super().__init__()
-
+        print(self.__dir__())
+        
         self.title("Hoorad CyberSecurity")
         self.geometry("650x200")
         self.minsize(650, 200)
-        ctk.set_appearance_mode("system")  # default
-
+        ctk.set_appearance_mode("Dark")  # default
+        self.default_font = ctk.CTkFont('Tahoma')
         
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -31,5 +35,5 @@ class App(ctk.CTk):
 
 
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    ui = UserIterface()
+    ui.mainloop()
