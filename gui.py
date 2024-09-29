@@ -18,7 +18,7 @@ class UserIterface(ctk.CTk):
         
         self.title("HOORAD CyberSecurity")
         ctk.set_appearance_mode("system")  # default
-        self.iconbitmap("tiny_icon.ico")
+        self.iconbitmap("./media/tiny_icon.ico")
             
         self.default_font = ctk.CTkFont("Tahoma")
 
@@ -28,7 +28,7 @@ class UserIterface(ctk.CTk):
 
         # HOORAD image:
         logo = ctk.CTkImage(
-            dark_image=Image.open("logo.png"), light_image=Image.open("logo.png"), size=(256, 61)
+            dark_image=Image.open("./media/logo.png"), light_image=Image.open("./media/logo.png"), size=(256, 61)
         )
         logo_label = ctk.CTkLabel(
             self, image=logo, text=""

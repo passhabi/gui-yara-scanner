@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from ctk_widget import CTkMeter
+from widget.ctk_widget import CTkMeter
 from tkinter import Text, END, RIGHT
 
 
