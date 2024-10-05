@@ -2,8 +2,11 @@ import logging
 import yara
 import asyncio
 from pathlib import Path
-
+import psutil
+import time
+import sys
 from typing import Union
+import os
 
 
 # import threading
@@ -46,3 +49,4 @@ class YaraScanner:
     def find_match(self, data):
         """Find a match in the scanned file."""
         print(f"\33[31m {data['rule']}: {self.file_path}\33[0m")
+

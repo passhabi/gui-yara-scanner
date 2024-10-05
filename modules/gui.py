@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from tkinter import *
 from tkinter import ttk
-from forms import Form1, Form2
+from lib.forms import Form1, Form2
 from PIL import Image
 
 
