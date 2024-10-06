@@ -140,9 +140,18 @@ class Benchmark:
         os.close(f)
         return took
 
+    def _remove_tempfile_dec(self, func):
+        def inner_func(*args, **kwargs):
+            result = func(*args, **kwargs)
+            os.remove(self.file)
+            return result
+        return inner_func
+    
+    
+
     def print_result(self):
         print(
-            "\n\nWritten {filesize} MB in {time_in_sec:.4f} s\nWrite speed is  {write_speed:.2f} MB/s"
+            "\nWritten {filesize} MB in {time_in_sec:.4f} s\nWrite speed is  {write_speed:.2f} MB/s"
             "\nMax speed: {max:.2f}, Min speed: {min:.2f}\n".format(
                 filesize=self.file_size,
                 time_in_sec=sum(self.write_results),
@@ -152,7 +161,7 @@ class Benchmark:
             )
         )
         print(
-            "\nRead {H_block} x {W_block} B blocks in {time_in_sec:.4f} s\nRead speed is  {read_speed:.2f} MB/s"
+            "Read {H_block} x {W_block} B blocks in {time_in_sec:.4f} s\nRead speed is  {read_speed:.2f} MB/s"
             "\nMax speed: {max:.2f}, Min speed: {min:.2f}\n".format(
                 H_block=len(self.read_results),
                 W_block=self.read_block_b,
@@ -162,6 +171,7 @@ class Benchmark:
                 min=self.read_block_b / (1024 * 1024 * max(self.read_results)),
             )
         )
+    
 
     def get_write_result(self):
 
@@ -187,6 +197,10 @@ class Benchmark:
 
 
 
+    
+
+
+
 if __name__ == '__main__':
     args = get_args()
     
@@ -198,6 +212,4 @@ if __name__ == '__main__':
     )
     
     benchmark.print_result()
-    
-    os.remove(args.file)
     
