@@ -1,4 +1,4 @@
-from modules.scanner import YaraScanner
+from modules.scanner_async import YaraScanner
 from modules.system_check import RunWithSysCheck
 
 # from lib.system_check import
@@ -11,11 +11,11 @@ import time
 
 if __name__ == "__main__":
     # logging.basicConfig(filename='log.txt', level=logging.INFO)
-    
     directory = Path(os.path.expanduser("~"))
     rule_path = Path("./rules.yar")
-
     scanner = YaraScanner(directory, rule_path)
+    
+    
     run_with_syscheck = RunWithSysCheck()
 
     # todo: get info about hardware and how much we can use it!

@@ -1,62 +1,114 @@
 # import logging
 import yara
-import asyncio
 from pathlib import Path
-import psutil
 import time
-import sys
 from typing import Union
-import os
 from colorama import Fore
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from abc import ABC, abstractmethod
 
 
-# import threading
-# from concurrent.futures import ThreadPoolExecutor
+class ThreadRunProgram(ABC):
+    def __init__(self):
+        
+        self.workers = 20  # default nubmer of threads
+        self.genereate_workers(self.workers)
+        self.futures = []
+        
+    @abstractmethod
+    def start(self):
+        pass
+
+    @abstractmethod
+    def restart(self, down_thread:bool):
+        """Restart the current (running) executor with assining more or less threads. 
+
+        Args:
+            down_thread (bool): _description_
+        """
+        pass
+    
+    def genereate_workers(self, num_workers):
+        self.executor = ThreadPoolExecutor(num_workers)
+        
+    def shutdown(self):
+        self.executor.shutdown()
+
+    def up_thread(self):
+        pass
+
+    def down_thread(self):
+        pass
 
 
-class YaraScanner:
+class YaraScanner(ThreadRunProgram):
     """Class for scanning files using Yara rules."""
 
-    def __init__(self, directory:Union[str, Path], rule_path:Union[str, Path]):
+    def __init__(
+        self,
+        directory: Union[str, Path],
+        rule_path: Union[str, Path],
+        console_print=True,
+    ):
         """
         Initialize YaraScanner with directory and rule path.
             directory: root directory to search over all files and sub directories.
             rule_path: str path to Yara rules.
-        """
+        """ 
+        
+        super().__init__()
         self.directory = Path(directory)
         self.rule = yara.compile(filepath=str(rule_path), includes=False)
+
+        self.console_print = (
+            console_print  # print the path of the file is checking in console.
+        )
+
         
         # self.logger = logging.getLogger(__name__)
-
-    
-    async def scan_directory(self):
-        """Scan files in the directory."""
-        async with asyncio.TaskGroup() as tg:
-            for file_path in self.directory.rglob("*"):
-                if file_path.is_file():
-                    tg.create_task(self.scan_file(file_path))
-                
-                    
-    def start_scan(self):
-        print(Fore.GREEN + f"Scanning {self.directory} ...", Fore.RESET)
-        asyncio.run(self.scan_directory())
-
-
-    async def scan_file(self, file_path):
-        """Scan a specific file."""        
-        # todo: use Semaphore?
-        print(file_path)
-        self.file_path = file_path
-        try:
-            result = self.rule.match(
-                str(file_path),
-                callback=self.find_match,
-                which_callbacks=yara.CALLBACK_MATCHES,
-            )
         
-        except yara.Error:
-            print(Fore.LIGHTRED_EX + f"Couldn't read the file {file_path},", Fore.RESET)
+    def scan_directory(self):
+        """Scan files in the directory."""
+        for file_path in self.directory.rglob("*"):
+            future = self.executor.submit(self.scan_file, file_path)
+            self.futures.append(future) 
+            
 
+    def start(self):
+        print(Fore.GREEN + f"Scanning {self.directory} ...", Fore.RESET)
+        self.scan_directory()
+        
+        
+        for f in self.futures:
+            f.result()
+
+    def restart(self):
+        pass
+        
+    def scan_file(self, file_path: Path):
+        """Scan a specific file."""
+        # todo: use Semaphore?
+
+        if file_path.is_file():  # pass if is a directory.
+
+            # todo: remove this 2 line check to get better preformance:
+            if self.console_print:
+                print(file_path)
+
+            self.file_path = file_path
+            try:
+                result = self.rule.match(
+                    str(file_path),
+                    callback=self.find_match,
+                    which_callbacks=yara.CALLBACK_MATCHES,
+                )
+
+            except yara.Error:
+                print(
+                    Fore.LIGHTRED_EX + f"Couldn't read the file {file_path},",
+                    Fore.RESET,
+                )
 
     def find_match(self, data):
         """Find a match in the scanned file."""
@@ -65,9 +117,15 @@ class YaraScanner:
 
 
 if __name__ == "__main__":
-    
-    directory = Path(os.path.expanduser("~")) / 'Desktop' / 'test'
+
+    time.sleep(3)
+
+    tic = time.perf_counter()
+    directory = Path("C:/Program Files/Git/")
     rule_path = Path("./rules.yar")
 
     scanner = YaraScanner(directory, rule_path)
-    scanner.start_scan()
+    scanner.start()
+
+    toc = time.perf_counter()
+    print(Fore.RED + f"{toc - tic:.2f}sec")
