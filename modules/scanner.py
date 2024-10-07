@@ -20,7 +20,6 @@ class ThreadRunProgram(ABC):
     def start(self):
         pass
 
-    @abstractmethod
     def restart(self, down_thread:bool):
         """Restart the current (running) executor with assining more or less threads. 
 
@@ -31,9 +30,17 @@ class ThreadRunProgram(ABC):
     
     def genereate_workers(self, num_workers):
         self.executor = ThreadPoolExecutor(num_workers)
+    
+    def assing_task_to_workers(self, func, args):
+        future = self.executor.submit(func, args)
+        self.futures.append(future)
+    
+    def wait_on_result(self):
+        for f in self.futures:
+            f.result()
         
     def shutdown(self):
-        self.executor.shutdown()
+        self.executor.shutdown(wait=True)
 
     def up_thread(self):
         pass
@@ -71,20 +78,15 @@ class YaraScanner(ThreadRunProgram):
     def scan_directory(self):
         """Scan files in the directory."""
         for file_path in self.directory.rglob("*"):
-            future = self.executor.submit(self.scan_file, file_path)
-            self.futures.append(future) 
+            self.assing_task_to_workers(self.scan_file, file_path)
             
 
     def start(self):
         print(Fore.GREEN + f"Scanning {self.directory} ...", Fore.RESET)
         self.scan_directory()
         
+        self.wait_on_result()
         
-        for f in self.futures:
-            f.result()
-
-    def restart(self):
-        pass
         
     def scan_file(self, file_path: Path):
         """Scan a specific file."""
