@@ -1,5 +1,5 @@
-from modules.scanner_async import YaraScanner
-from modules.system_check import RunWithSysCheck
+from modules.scanner import YaraScanner
+from modules.concurrently import RunWithSysCheck
 
 # from lib.system_check import
 from pathlib import Path
@@ -14,25 +14,25 @@ if __name__ == "__main__":
     directory = Path(os.path.expanduser("~"))
     rule_path = Path("./rules.yar")
     scanner = YaraScanner(directory, rule_path)
+    scanner.start()
     
-    
-    run_with_syscheck = RunWithSysCheck()
+    # run_with_syscheck = RunWithSysCheck()
 
     # todo: get info about hardware and how much we can use it!
     # run_with_syscheck.get_system_info()
     
-    # Run monitioring on sperate thread:
-    th_run_with_syscheck = threading.Thread(
-        target=run_with_syscheck.run_func,
-        args=(
-            os.getpid(),  # pid of the main
-            scanner.start_scan,  # send function to run with threadpoolexcuter.
-        ),
-        name="RunTaskMonitoring",
-    )
-    th_run_with_syscheck.start()
+    # # Run monitioring on sperate thread:
+    # th_run_with_syscheck = threading.Thread(
+    #     target=run_with_syscheck.run_func,
+    #     args=(
+    #         os.getpid(),  # pid of the main
+    #         scanner.start_scan,  # send function to run with threadpoolexcuter.
+    #     ),
+    #     name="RunTaskMonitoring",
+    # )
+    # th_run_with_syscheck.start()
 
-    th_run_with_syscheck.join()
+    # th_run_with_syscheck.join()
 
     # import subprocess
 

@@ -1,53 +1,11 @@
 # import logging
 import yara
 from pathlib import Path
-import time
 from typing import Union
 from colorama import Fore
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
 
-from abc import ABC, abstractmethod
-
-
-class ThreadRunProgram(ABC):
-    def __init__(self):
-        
-        self.workers = 20  # default nubmer of threads
-        self.genereate_workers(self.workers)
-        self.futures = []
-        
-    @abstractmethod
-    def start(self):
-        pass
-
-    def restart(self, down_thread:bool):
-        """Restart the current (running) executor with assining more or less threads. 
-
-        Args:
-            down_thread (bool): _description_
-        """
-        pass
-    
-    def genereate_workers(self, num_workers):
-        self.executor = ThreadPoolExecutor(num_workers)
-    
-    def assing_task_to_workers(self, func, args):
-        future = self.executor.submit(func, args)
-        self.futures.append(future)
-    
-    def wait_on_result(self):
-        for f in self.futures:
-            f.result()
-        
-    def shutdown(self):
-        self.executor.shutdown(wait=True)
-
-    def up_thread(self):
-        pass
-
-    def down_thread(self):
-        pass
-
+from concurrently import ThreadRunProgram
 
 class YaraScanner(ThreadRunProgram):
     """Class for scanning files using Yara rules."""
