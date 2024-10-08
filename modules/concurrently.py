@@ -9,23 +9,31 @@ import psutil
 class ThreadRunProgram(ABC):
     def __init__(self):
         
-        self.workers = 20  # default nubmer of threads
-        self.genereate_workers(self.workers)
+        self.num_workers = 20  # default nubmer of threads
+        self.inc_dec_workers = 5  # number of threads to increase or decrease
+        self.generate_workers(self.num_workers)
+        self.isactive = False # Either if the ThreadPoolExecutor is active or not!
         self.futures = []
         
     @abstractmethod
     def start(self):
         pass
 
-    def restart(self, down_thread:bool):
+    def restart(self, do_decrese_threads:bool=True):
         """Restart the current (running) executor with assining more or less threads. 
 
         Args:
             down_thread (bool): _description_
         """
-        pass
+        self.shutdown()
+        self.isactive = False
+        if do_decrese_threads is True:
+            self.decrese_threads()
+        else:
+            self.increase_threads()
     
-    def genereate_workers(self, num_workers):
+    def generate_workers(self, num_workers):
+        self.isactive = True
         self.executor = ThreadPoolExecutor(num_workers, thread_name_prefix='ThreadPool'+ str(self))
     
     def assing_task_to_workers(self, func, args):
@@ -33,8 +41,15 @@ class ThreadRunProgram(ABC):
             future = self.executor.submit(func, args)
             self.futures.append(future)
         except RuntimeError as e:
-            print(f"\33[35m has been shutdown.... {e}")
+            # Wait until an executor will be generated and then continue:
+            while not self.isactive:
+                print(Fore.MAGENTA + "No Thread!" + Fore.RESET)
+                time.sleep(1)
+            print(Fore.BLUE + "Got a Thread!" + Fore.RESET)
             
+            # Handel the the path has been passed and there was no the executor for it:
+            future = self.executor.submit(func, args)
+            self.futures.append(future)
             
     def wait_on_result(self):
         for f in self.futures:
@@ -43,11 +58,15 @@ class ThreadRunProgram(ABC):
     def shutdown(self):
         self.executor.shutdown(wait=True)
 
-    def up_thread(self):
-        pass
+    def increase_threads(self):
+        self.num_workers = self.num_workers + self.inc_dec_workers
+        print(Fore.GREEN + "Incresing the number of threads" + Fore.RESET)
+        self.generate_workers(self.num_workers)
 
-    def down_thread(self):
-        pass
+    def decrese_threads(self):
+        self.num_workers = self.num_workers - self.inc_dec_workers
+        print(Fore.MAGENTA + "Decresing the number of threads" + Fore.RESET)
+        self.generate_workers(self.num_workers)
     
     def __str__(self):
         return self.__class__.__name__
@@ -79,11 +98,11 @@ class RunWithSysCheck:
 
             bytes_diff = toc_disk_io.read_bytes - tic_disk_io.read_bytes
             print(
-                f"CPU Usage:{cpu_usage}%  RAM Usage:{ram_usage:0.2f}%  DISK:{bytes_diff/1024:.2f} KB/s"
+                f"CPU Usage:{cpu_usage}%  RAM Usage:{ram_usage:0.1f}%  DISK:{bytes_diff/1024:.2f} KB/s"
             )
             
-            if cpu_usage > 10: # #precent
-                self.obj.shutdown()
+            if cpu_usage > 5: # precent
+                self.obj.restart(do_decrese_threads=True)
     
     def start_with_monitoring(self):
         th_monitor = threading.Thread(target=self.monitoring, args=(), name='MonitoringThread')
