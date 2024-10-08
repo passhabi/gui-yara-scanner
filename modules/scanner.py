@@ -14,6 +14,7 @@ class YaraScanner(ThreadRunProgram):
         self,
         directory: Union[str, Path],
         rule_path: Union[str, Path],
+        log = False,
         console_print=True,
     ):
         """
@@ -30,7 +31,7 @@ class YaraScanner(ThreadRunProgram):
             console_print  # print the path of the file is checking in console.
         )
 
-        
+        self.file_counter = 0  # count the number of file thats we are scaning.
         # self.logger = logging.getLogger(__name__)
         
     def scan_directory(self):
@@ -45,13 +46,17 @@ class YaraScanner(ThreadRunProgram):
         
         self.wait_on_result()
         
+        # return number of scanned files after done scanning:
+        return self.file_counter
+        
         
     def scan_file(self, file_path: Path):
         """Scan a specific file."""
         # todo: use Semaphore?
 
         if file_path.is_file():  # pass if is a directory.
-
+            self.file_counter += 1
+            
             # todo: remove this 2 line check to get better preformance:
             if self.console_print:
                 print(file_path)
@@ -75,7 +80,9 @@ class YaraScanner(ThreadRunProgram):
         print(Fore.RED + f"{data['rule']}: {self.file_path}", Fore.RESET)
         return yara.CALLBACK_CONTINUE
 
-
+    def get_number_tracked_file(self):
+        return self.file_counter
+        
 if __name__ == "__main__":
 
     time.sleep(3)
