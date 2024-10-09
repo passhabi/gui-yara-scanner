@@ -1,23 +1,26 @@
 import customtkinter as ctk
 from widgets.ctk_widget import CTkMeter
-from tkinter import Text, END, RIGHT
-
+from tkinter import END, filedialog
+from gui import UserInterface
 
 class Form1(ctk.CTkFrame):
-    def __init__(self, app):
-        super().__init__(app)
-        self.master = app
+    def __init__(self, parent:ctk.CTk):
+        super().__init__(parent)
+        print(self.master)
+        self.set_layout()
+        self.load_widgets(parent)
 
+    def set_layout(self):
         self.grid(row=1, column=0, padx=0, pady=0, sticky="nesw")
         self.grid_rowconfigure((1, 2), weight=1)
         self.grid_rowconfigure(0, weight=100)
         self.grid_columnconfigure((0, 1), weight=1)
-
+        
+    def load_widgets(self, parent):
         #### row 0, agreement text:
-
         agreement_textbox = ctk.CTkTextbox(
             master=self,
-            font=self.master.default_font,
+            font=self.master.font,
             corner_radius=2,
         )
         agreement_textbox.grid(row=0, column=0, columnspan=2, sticky="nsew")
@@ -40,7 +43,7 @@ class Form1(ctk.CTkFrame):
         guide_label = ctk.CTkLabel(
             self,
             justify="right",
-            font=app.default_font,
+            font=parent.font,
             text=".برای آغاز متن توافقنامه را مطالعه نموده و روی کلید موافقم کلیک کنید",
             anchor="e",
             # wraplength=350
@@ -56,11 +59,10 @@ class Form1(ctk.CTkFrame):
         btn_ready = ctk.CTkButton(self, text="موافقم", command=self.master.show_form2)
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
 
-
+            
 class Form2(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master)
-        self.master = master
+    def __init__(self, parent):
+        super().__init__(parent)
 
         progress_wgt = CTkMeter(self, background="#242424")
         progress_wgt.grid(row=0, column=0)
