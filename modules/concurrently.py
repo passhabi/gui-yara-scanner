@@ -4,7 +4,7 @@ import time
 from colorama import Fore
 import threading
 import psutil
-
+from modules import monkeytest
 
 class ThreadRunProgram(ABC):
     def __init__(self):
@@ -84,12 +84,43 @@ class RunWithSysCheck:
         self.pid = pid
         self.console_print = console_print
 
-    def start_benchmark_time(self):
+        
+    def get_system_info(self):
+        # Get CPU usage
+        cpu_usage = psutil.cpu_percent(interval=1)
+        ram_info = psutil.virtual_memory()
+
+        print(
+            f"CPU Usage: {cpu_usage}%  RAM Usage is: {ram_info.percent}% of the total {ram_info.available / (1024 ** 3):.2f} GB"
+        )
+
+        # Test Hdd with MonkeyTest:
+        args = monkeytest.get_args()
+        
+        benchmark = monkeytest.Benchmark(
+        file=args.file,
+        write_mb=args.size,
+        write_block_kb=args.write_block_size,
+        read_block_b=args.read_block_size,
+        ).print_result()
+        
+        # todo: get result of benchmarkfor further dues.
+        
+        # print(f"Total RAM: {ram_info.total / (1024 ** 3):.2f} GB")
+        # print(f"Used RAM: {ram_info.used / (1024 ** 3):.2f} GB")
+        
+    def start_benchmark_time(self) -> str:
+        """
+        Returns:
+            str: elapsed time in seconds.
+        """
         time.sleep(3)
         tic = time.perf_counter()
         self.obj.start()
         toc = time.perf_counter()
-        print(Fore.RED + f"{toc - tic:.2f}sec")
+        
+        elapsed_time = toc - tic
+        return f"{elapsed_time:.2f} # returns time"
 
     def monitoring(self):
 

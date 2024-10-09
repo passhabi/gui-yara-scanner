@@ -4,8 +4,11 @@ from pathlib import Path
 from typing import Union
 from colorama import Fore
 import time
+if __name__ == "__main__":
+    from concurrently import ThreadRunProgram
+else:
+    from modules.concurrently import ThreadRunProgram
 
-from concurrently import ThreadRunProgram
 
 class YaraScanner(ThreadRunProgram):
     """Class for scanning files using Yara rules."""
@@ -40,7 +43,12 @@ class YaraScanner(ThreadRunProgram):
             self.assing_task_to_workers(self.scan_file, file_path)
             
 
-    def start(self):
+    def start(self) -> int :
+        """Start scaning the given directory.
+
+        Returns:
+            int: Returns number of scanned files.
+        """
         print(Fore.GREEN + f"Scanning {self.directory} ...", Fore.RESET)
         self.scan_directory()
         
