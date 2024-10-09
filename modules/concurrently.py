@@ -10,7 +10,7 @@ class ThreadRunProgram(ABC):
     def __init__(self):
 
         self.num_workers = 20  # default nubmer of threads
-        self.inc_dec_workers = 5  # number of threads to increase or decrease
+        self.inc_dec_workers = 4  # number of threads to increase or decrease
         self.generate_workers(self.num_workers)
         self.isactive = False  # Either if the ThreadPoolExecutor is active or not!
         self.futures = []
@@ -47,7 +47,7 @@ class ThreadRunProgram(ABC):
             # Wait until an executor will be generated and then continue:
             while not self.isactive:
                 print(Fore.MAGENTA + "No Thread!" + Fore.RESET)
-                time.sleep(1)
+                time.sleep(0.5)
             print(Fore.BLUE + "Got a Thread!" + Fore.RESET)
 
             # Handel the the path has been passed and there was no the executor for it:
@@ -68,7 +68,9 @@ class ThreadRunProgram(ABC):
         self.generate_workers(self.num_workers)
 
     def decrese_threads(self):
-        self.num_workers = self.num_workers - self.inc_dec_workers
+        num_workers = self.num_workers - self.inc_dec_workers
+        self.num_worker = num_workers or 1 # check to have at least 1 worker.
+        
         print(Fore.MAGENTA + "Decresing the number of threads" + Fore.RESET)
         self.generate_workers(self.num_workers)
 
