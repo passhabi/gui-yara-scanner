@@ -1,9 +1,19 @@
 import customtkinter as ctk
 from widgets.ctk_widget import CTkMeter
 from tkinter import END, filedialog
-from gui import UserInterface
+from abc import abstractmethod, ABC
 
-class Form1(ctk.CTkFrame):
+class Form(ctk.CTkFrame):
+    def __init__(self, parent:ctk.CTk):
+        super().__init__(parent)
+        
+    def show_form(self, switch_to:str):
+        current_form = self.__class__.__name__
+        next_form = switch_to
+        self.master.switch_between_forms(current_form, next_form)
+
+        
+class Form1(Form):
     def __init__(self, parent:ctk.CTk):
         super().__init__(parent)
         print(self.master)
@@ -56,11 +66,11 @@ class Form1(ctk.CTkFrame):
         guide_label.grid(row=1, column=1, pady=20, padx=10, sticky="e")
 
         # row 2, buttons:
-        btn_ready = ctk.CTkButton(self, text="موافقم", command=self.master.show_form2)
+        btn_ready = ctk.CTkButton(self, text="موافقم", command=lambda: self.show_form('Form2'))
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
-
+        
             
-class Form2(ctk.CTkFrame):
+class Form2(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -69,5 +79,5 @@ class Form2(ctk.CTkFrame):
 
         progress_wgt.set(20)
 
-        button2 = ctk.CTkButton(self, text="Back", command=self.master.show_form1)
+        button2 = ctk.CTkButton(self, text="Back", command=lambda: self.show_form('Form1'))
         button2.grid(row=1, column=0, pady=12, padx=10)

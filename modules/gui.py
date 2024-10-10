@@ -1,8 +1,10 @@
 import customtkinter as ctk
 from tkinter import *
 from tkinter import ttk
-from forms import *
+# from forms import * # it will loaded with importlib
 from PIL import Image
+import importlib
+import inspect
 
 class UserInterface(ctk.CTk):
 
@@ -13,16 +15,8 @@ class UserInterface(ctk.CTk):
         window_size = 900, 670
         self.window_layout(window_size, "Tahoma")
         
+        self.frames = {} # this is to store forms (tk frames)
         self.initialize_forms()
-
-
-    def initialize_forms(self) -> None:
-        # Initialize forms.py
-        self.form1 = Form1(self)
-        self.form2 = Form2(self)
-        
-        # Show Form 1 initially
-        self.show_form1()
 
     def window_layout(self, window_size, font):
         """Config Window Appearance and layout.
@@ -63,16 +57,19 @@ class UserInterface(ctk.CTk):
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
-        
-        
-    def show_form1(self):
-        self.form2.grid_remove()
-        self.form1.grid()
 
-    def show_form2(self):
-        self.form1.grid_remove()
-        self.form2.grid()
-
+    def initialize_forms(self) -> None:
+        # load all forms(tk frames):
+        module_forms = importlib.import_module('forms')
+        
+        for form_name, form_class in inspect.getmembers(module_forms, inspect.isclass):
+            if issubclass(form_class, ctk.CTkFrame):
+                self.frames[form_name] = form_class(self) # it dose the first entty of frames with .grid(), idk why! but good!
+    
+    def switch_between_forms(self, current_form:str,  next_form:str):
+        self.frames[current_form].grid_remove()
+        self.frames[next_form].grid()
+        
 
 if __name__ == "__main__":
     ui = UserInterface()
