@@ -1,24 +1,32 @@
 import customtkinter as ctk
 from widgets.ctk_widget import CTkMeter
 from tkinter import END, filedialog
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
-class Form(ctk.CTkFrame):
+class Form(ABC, ctk.CTkFrame):
     def __init__(self, parent:ctk.CTk):
         super().__init__(parent)
+        
+        self.set_layout()
+        self.load_widgets(parent)
         
     def show_form(self, switch_to:str):
         current_form = self.__class__.__name__
         next_form = switch_to
         self.master.switch_between_forms(current_form, next_form)
+    
+    @abstractmethod
+    def set_layout(self):
+        pass
+    
+    @abstractmethod
+    def load_widgets(self, parent):
+        pass
 
         
 class Form1(Form):
     def __init__(self, parent:ctk.CTk):
         super().__init__(parent)
-        print(self.master)
-        self.set_layout()
-        self.load_widgets(parent)
 
     def set_layout(self):
         self.grid(row=1, column=0, padx=0, pady=0, sticky="nesw")
@@ -69,15 +77,29 @@ class Form1(Form):
         btn_ready = ctk.CTkButton(self, text="موافقم", command=lambda: self.show_form('Form2'))
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
         
-            
+
 class Form2(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
-        progress_wgt = CTkMeter(self, background="#242424")
-        progress_wgt.grid(row=0, column=0)
-
-        progress_wgt.set(20)
-
-        button2 = ctk.CTkButton(self, text="Back", command=lambda: self.show_form('Form1'))
+    def set_layout(self):
+        pass
+    
+    def load_widgets(self, parent):
+        button2 = ctk.CTkButton(self, text="Back", command=lambda: self.show_form('Form3'))
         button2.grid(row=1, column=0, pady=12, padx=10)
+
+
+         
+class Form3(Form):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        
+    def set_layout(self):
+        pass
+
+    def load_widgets(self, parent):
+        pass
+
+    

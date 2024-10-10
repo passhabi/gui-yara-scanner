@@ -57,14 +57,15 @@ class UserInterface(ctk.CTk):
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
-
+    
     def initialize_forms(self) -> None:
         # load all forms(tk frames):
         module_forms = importlib.import_module('forms')
         
         for form_name, form_class in inspect.getmembers(module_forms, inspect.isclass):
             if issubclass(form_class, ctk.CTkFrame):
-                self.frames[form_name] = form_class(self) # it dose the first entty of frames with .grid(), idk why! but good!
+                if form_name != "Form":
+                    self.frames[form_name] = form_class(self) # it dose the first entty of frames with .grid(), idk why! but good!
     
     def switch_between_forms(self, current_form:str,  next_form:str):
         self.frames[current_form].grid_remove()
