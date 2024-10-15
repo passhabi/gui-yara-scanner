@@ -1,10 +1,12 @@
 import customtkinter as ctk
 from tkinter import *
 from tkinter import ttk
+
 # from forms import * # it will loaded with importlib
 from PIL import Image
 import importlib
 import inspect
+
 
 class UserInterface(ctk.CTk):
 
@@ -17,6 +19,7 @@ class UserInterface(ctk.CTk):
 
         self.frames = {}  # this is to store forms (tk frames)
         self.initialize_forms()
+        self.add_sidebar()
 
     def window_layout(self, window_size, font):
         """Config Window Appearance and layout.
@@ -25,7 +28,7 @@ class UserInterface(ctk.CTk):
             window_size (_type_): _description_
         """
 
-        self.geometry(f'{window_size[0]}x{window_size[1]}')  # eg."600x800"
+        self.geometry(f"{window_size[0]}x{window_size[1]}")  # eg."600x800"
         self.minsize(*window_size)
         self.centers_windows(window_size)
 
@@ -37,65 +40,69 @@ class UserInterface(ctk.CTk):
 
         self.font = ctk.CTkFont(font)
 
-        self.columnconfigure(0, weight=4)
+        self.columnconfigure(0, weight=20)
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=4)
+        self.rowconfigure(1, weight=20)
 
         # HOORAD Logo:
         logo = ctk.CTkImage(
-            dark_image=Image.open("./media/logo.png"), light_image=Image.open("./media/logo.png"), size=(256, 61)
+            dark_image=Image.open("./media/logo.png"),
+            light_image=Image.open("./media/logo.png"),
+            size=(256, 61),
         )
         logo_label = ctk.CTkLabel(
             self, image=logo, text=""
-        )  # display image with a CTkLabel~~
+        )  # display image with a CTkLabel
 
-        logo_label.grid(row=0, column=1, sticky='sne', pady=10)
-        self.add_sidebar()
+        logo_label.grid(row=0, column=1, sticky="snew", pady=10)
 
     def centers_windows(self, window_size):
         width, height = window_size
 
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
-        self.geometry(f'{width}x{height}+{x}+{y}')
+        self.geometry(f"{width}x{height}+{x}+{y}")
 
-    def add_sidebar(self, font=('Tahoma', 12)):
-        sidebar = ctk.CTkFrame(self, width=150, corner_radius=0)
-        sidebar.grid(row=1, column=1, padx=0, pady=0, sticky="nesw")
-        
+    def add_sidebar(self, font=("Tahoma", 14)):
+        self.sidebar = ctk.CTkFrame(self, fg_color="transparent", width=200)
+        self.sidebar.grid(row=1, column=1, padx=(0, 50), pady=30, sticky="nse")
+        # self.sidebar.grid_rowconfigure(5, weight=1)
+        # self.sidebar.grid_columnconfigure(2, weight=1)
+
         # Define the steps with icons and labels
         steps = [
             {"text": "توافقنامه", "icon": "📝"},
             {"text": "تنظیمات اسکن", "icon": "⚙️"},
             {"text": "اسکن", "icon": "🔍"},
             {"text": "نتیجه", "icon": "📊"},
-            {"text": "درباره", "icon": "ℹ"},
+            {"text": "درباره", "icon": "ℹ "},
         ]
 
-        # Create labels for each step in the sidebar
+        # Create labels for each step in the sidebar:
         step_labels = []
-        for step in steps:
-            frame = ctk.CTkFrame(sidebar, fg_color="transparent")
-            frame.pack(pady=5, padx=10, anchor="w", fill="x")
+        for i, step in enumerate(steps):
+            text_label = ctk.CTkLabel(self.sidebar, text=step['text'], font=font)
+            text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky='e')
 
-            text_label = ctk.CTkLabel(frame, text=step["text"], font=font)
-            text_label.pack(side="left", padx=(0, 5))
-
-            icon_label = ctk.CTkLabel(frame, text=step["icon"], font=font)
-            icon_label.pack(side="right")
+            icon_label = ctk.CTkLabel(self.sidebar, text=step['icon'], font=font)
+            icon_label.grid(row=i, column=1)
 
             # Add hover and click effect for "درباره"
             if step["text"] == "درباره":
                 text_label.bind("<Button-1>", lambda e: self.on_about_click())
-                text_label.bind("<Enter>", lambda e, lbl=text_label: self.on_enter(e, lbl))
-                text_label.bind("<Leave>", lambda e, lbl=text_label: self.on_leave(e, lbl))
+                text_label.bind(
+                    "<Enter>", lambda e, lbl=text_label: self.on_enter(e, lbl)
+                )
+                text_label.bind(
+                    "<Leave>", lambda e, lbl=text_label: self.on_leave(e, lbl)
+                )
 
             step_labels.append({"text_label": text_label, "icon_label": icon_label})
 
         # Highlight the first step as the current step
         self.update_step_label(step_labels[0])
-    
+
     def update_step_label(self, label):
         # Function to update the current step's label to bold
         # for lbl in step_labels:
@@ -105,28 +112,29 @@ class UserInterface(ctk.CTk):
 
     # Function to handle the hover effect for the "درباره" step
     def on_enter(event, label):
-        label.configure(font=("Arial", 12, "underline"), text_color="#00ccff")  # Underline and change color
+        label.configure(
+            font=("Arial", 12, "underline"), text_color="#00ccff"
+        )  # Underline and change color
 
     def on_leave(event, label):
-        label.configure(font=("Arial", 12), text_color="white")  # Remove underline and restore color
-    
+        label.configure(
+            font=("Arial", 12), text_color="white"
+        )  # Remove underline and restore color
+
     # Function to handle the click on the "درباره" step
-    def on_about_click():
+    def on_about_click(self):
         print("درباره clicked!")
-        
-        
-        
-        
-        
+
     def initialize_forms(self) -> None:
         # load all forms(tk frames):
-        module_forms = importlib.import_module('forms')
+        module_forms = importlib.import_module("forms")
 
-        for form_name, form_class in inspect.getmembers(module_forms, inspect.isclass):
+        # Each Form class girds.() itself; hence we initilize from last to the first Form
+        #    the Form1 one will be grid() at last:
+        for form_name, form_class in reversed(inspect.getmembers(module_forms, inspect.isclass)):
             if issubclass(form_class, ctk.CTkFrame):
                 if form_name != "Form":
-                    self.frames[form_name] = form_class(
-                        self)  # it dose the first entty of frames with .grid(), idk why! but good!
+                    self.frames[form_name] = form_class(self)
 
     def switch_between_forms(self, current_form: str, next_form: str):
         self.frames[current_form].grid_remove()

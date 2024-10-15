@@ -3,29 +3,29 @@ from widgets.ctk_widget import CTkMeter
 from tkinter import END, filedialog
 from abc import ABC, abstractmethod
 
+
 class Form(ABC, ctk.CTkFrame):
-    def __init__(self, parent:ctk.CTk):
-        super().__init__(parent)
-        
+    def __init__(self, parent: ctk.CTk, **kwargs):
+        super().__init__(master=parent, width=500, **kwargs)
+
         self.set_layout()
         self.load_widgets(parent)
-        
-    def show_form(self, switch_to:str):
+
+    def show_form(self, switch_to: str):
         current_form = self.__class__.__name__
         next_form = switch_to
         self.master.switch_between_forms(current_form, next_form)
-    
-    @abstractmethod
+
     def set_layout(self):
-        pass
-    
+        self.grid(row=1, column=0, padx=0, pady=0, sticky="nesw")
+
     @abstractmethod
     def load_widgets(self, parent):
         pass
 
-        
+
 class Form1(Form):
-    def __init__(self, parent:ctk.CTk):
+    def __init__(self, parent: ctk.CTk):
         super().__init__(parent)
 
     def set_layout(self):
@@ -33,7 +33,7 @@ class Form1(Form):
         self.grid_rowconfigure((1, 2), weight=1)
         self.grid_rowconfigure(0, weight=100)
         self.grid_columnconfigure((0, 1), weight=1)
-        
+
     def load_widgets(self, parent):
         #### row 0, agreement text:
         agreement_textbox = ctk.CTkTextbox(
@@ -41,7 +41,7 @@ class Form1(Form):
             font=self.master.font,
             corner_radius=2,
         )
-        agreement_textbox.grid(row=0, column=0, columnspan=2, sticky="nsew")
+        agreement_textbox.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=(10, 0))
         agreement_textbox.tag_config("rtl", justify="right")
 
         # use FixTxt to insert the rtl text, https://fixtxt.co/
@@ -76,30 +76,27 @@ class Form1(Form):
         # row 2, buttons:
         btn_ready = ctk.CTkButton(self, text="موافقم", command=lambda: self.show_form('Form2'))
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
-        
+
 
 class Form2(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
     def set_layout(self):
-        pass
-    
+        return super().set_layout()
+        
     def load_widgets(self, parent):
-        button2 = ctk.CTkButton(self, text="Back", command=lambda: self.show_form('Form3'))
-        button2.grid(row=1, column=0, pady=12, padx=10)
+        next_button = ctk.CTkButton(self, text="ادامه", command=lambda: self.show_form('Form3'))
+        next_button.grid(row=1, column=0, pady=12, padx=10)
+        
+        back_button = ctk.CTkButton(self, text="بازشگت", command=lambda: self.show_form('Form1'))
+        back_button.grid(row=1, column=1, pady=12, padx=10)
 
 
-         
 class Form3(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
-        
-    def set_layout(self):
-        pass
-
     def load_widgets(self, parent):
-        pass
-
-    
+        back_button = ctk.CTkButton(self, text="بازشگت", command=lambda: self.show_form('Form2'))
+        back_button.grid(row=1, column=1, pady=12, padx=10)
