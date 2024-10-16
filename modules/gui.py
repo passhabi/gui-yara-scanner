@@ -80,13 +80,13 @@ class UserInterface(ctk.CTk):
         # get labels and icon for each step and put them on the sidebar:
         step_tk_labels = []
         for i, form in enumerate(reversed(self.frames.values())):
-            
+
             text_label, icon_label = form.set_sidebar_widget(self.sidebar)
-            
+
             # place each step (Form) inside the sidebar:
             text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
             icon_label.grid(row=i, column=1)
-                
+
             step_tk_labels.append({"text_label": text_label, "icon_label": icon_label})
 
         # Highlight the first step as the current step
@@ -97,12 +97,11 @@ class UserInterface(ctk.CTk):
         label["text_label"].configure(font=self.font_bold, text_color="white")
         label["icon_label"].configure(font=self.font_bold, text_color="white")
 
-        print("درباره clicked!")
-
     def initialize_forms(self) -> None:
         # load all forms(tk frames):
         module_forms = importlib.import_module("forms")
-
+        # todo: move it to the Form class.
+        
         # Each Form class girds.() itself; hence we initialize from last to the first Form
         #    the Form1 one will be grid() at last:
         for form_name, form_class in reversed(
@@ -113,7 +112,8 @@ class UserInterface(ctk.CTk):
                     # save the Forms in frames and initialize it with root app:
                     self.frames[form_name] = form_class(self)
 
-    def switch_between_forms(self, current_form: str, next_form: str):
+    def switch_forms(self, current_form: str, next_form: str):
+        # todo: move it to the Form class.
         self.frames[current_form].grid_remove()
         self.frames[next_form].grid()
 

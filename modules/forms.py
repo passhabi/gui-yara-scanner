@@ -6,6 +6,10 @@ import typing
 
 
 class Form(ABC, ctk.CTkFrame):
+    # static variable
+    current_form_num = "1" 
+    frames = {}
+    
     # class attributes:
     @property
     @abstractmethod
@@ -35,10 +39,27 @@ class Form(ABC, ctk.CTkFrame):
         self.load_widgets(parent)
         self.sidebar_widget = None
 
-    def show_form(self, switch_to: str):
-        current_form = self.__class__.__name__
-        next_form = switch_to
-        self.master.switch_between_forms(current_form, next_form)
+    # todo: fix switch between forms:
+    # add it all functionality to Form form gui. make code more simple!
+    
+    def jump_to_form(self, switch_to: str):
+        next_form_num = switch_to[4]  # take the number out from str Form#. e.g. Form[3]
+        next_form_num = str(int(next_form_num) + 1)
+        self.master.switch_forms("Form" + Form.current_form_num, "Form" + next_form_num)
+        # update the current form number:
+        Form.current_form_num = next_form_num
+
+    def next_form(self):
+        next_form_num = str(int(Form.current_form_num) + 1)
+        self.master.switch_forms("Form" + Form.current_form_num, "Form" + next_form_num)
+        # update the current form number:
+        Form.current_form_num = next_form_num
+
+    def previous_form(self):
+        next_form_num = str(int(Form.current_form_num) - 1)
+        self.master.switch_forms("Form" + Form.current_form_num, "Form" + next_form_num)
+        # update the current form number:
+        Form.current_form_num = next_form_num
 
     def set_layout(self):
         self.grid(row=1, column=0, padx=0, pady=0, sticky="nesw")
@@ -47,7 +68,9 @@ class Form(ABC, ctk.CTkFrame):
     def load_widgets(self, parent):
         pass
 
-    def set_sidebar_widget(self, sidebar: ctk.CTkFrame):
+    def set_sidebar_widget(
+        self, sidebar: ctk.CTkFrame
+    ) -> typing.Tuple[ctk.CTkLabel, ctk.CTkLabel]:
         if self.sidebar_widget:
             raise FileExistsError(
                 f"sidebar widget for the {self.__class__.__name__} has been called before. try getting the widget by calling get_sidebar_widget()"
@@ -121,9 +144,7 @@ class Form1(Form):
         guide_label.grid(row=1, column=1, pady=20, padx=10, sticky="e")
 
         # row 2, buttons:
-        btn_ready = ctk.CTkButton(
-            self, text="موافقم", command=lambda: self.show_form("Form2")
-        )
+        btn_ready = ctk.CTkButton(self, text="موافقم", command=self.next_form)
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
 
 
@@ -138,14 +159,14 @@ class Form2(Form):
         return super().set_layout()
 
     def load_widgets(self, parent):
-        next_button = ctk.CTkButton(
-            self, text="ادامه", command=lambda: self.show_form("Form3")
-        )
+        
+        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
+        info_lbl.grid(row=0, column=0)
+        
+        next_button = ctk.CTkButton(self, text="ادامه", command=self.next_form)
         next_button.grid(row=1, column=0, pady=12, padx=10)
 
-        back_button = ctk.CTkButton(
-            self, text="بازشگت", command=lambda: self.show_form("Form1")
-        )
+        back_button = ctk.CTkButton(self, text="بازشگت", command=self.previous_form)
         back_button.grid(row=1, column=1, pady=12, padx=10)
 
 
@@ -157,9 +178,11 @@ class Form3(Form):
         super().__init__(parent)
 
     def load_widgets(self, parent):
-        back_button = ctk.CTkButton(
-            self, text="بازشگت", command=lambda: self.show_form("Form2")
-        )
+        
+        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
+        info_lbl.grid(row=0, column=0)
+        
+        back_button = ctk.CTkButton(self, text="بازشگت", command=self.previous_form)
         back_button.grid(row=1, column=1, pady=12, padx=10)
 
 
@@ -171,7 +194,8 @@ class Form4(Form):
         super().__init__(parent)
 
     def load_widgets(self, parent):
-        pass
+        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
+        info_lbl.grid(row=0, column=0)
 
 
 class Form5(Form):
@@ -183,15 +207,17 @@ class Form5(Form):
 
     def set_sidebar_widget(self, sidebar: ctk.CTkFrame):
         sidebar_widget = super().set_sidebar_widget(sidebar)
-        self.click_effect()
+        self.add_sidebar_mouse_effect()
         return sidebar_widget
 
-    def click_effect(self):
+    def add_sidebar_mouse_effect(self):
         # Add hover and click effect for "درباره"
         text_tklabel, icon_tklabel = self.get_sidebar_widget()
 
         # for the text:
         text_tklabel.bind("<Button-1>", self.on_about_click)
+        icon_tklabel.bind("<Button-1>", self.on_about_click)
+
         text_tklabel.bind(
             "<Enter>", lambda e, lbl=(text_tklabel, icon_tklabel): self.on_enter(e, lbl)
         )
@@ -221,7 +247,9 @@ class Form5(Form):
 
     # Function to handle the click on the "درباره" step
     def on_about_click(self, event):
-        print("about clicked!")
+        print(Form.current_form_num)
+        self.jump_to_form("Form5")
 
     def load_widgets(self, parent):
-        pass
+        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
+        info_lbl.grid(row=0, column=0)
