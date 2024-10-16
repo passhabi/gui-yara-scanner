@@ -7,7 +7,7 @@ import typing
 
 class Form(ABC, ctk.CTkFrame):
     # static variable
-    current_form_num = "1" 
+    curr_form_num = 1  # keep track of active Form
     frames = {}
     
     # class attributes:
@@ -43,23 +43,28 @@ class Form(ABC, ctk.CTkFrame):
     # add it all functionality to Form form gui. make code more simple!
     
     def jump_to_form(self, switch_to: str):
-        next_form_num = switch_to[4]  # take the number out from str Form#. e.g. Form[3]
-        next_form_num = str(int(next_form_num) + 1)
-        self.master.switch_forms("Form" + Form.current_form_num, "Form" + next_form_num)
+        
+        curr = Form.curr_form_num
+        next = int(switch_to[4])  # take the number out from str Form#. e.g. Form[3]
+        
+        self.master.switch_forms("Form" + str(curr), switch_to)
         # update the current form number:
-        Form.current_form_num = next_form_num
+        Form.curr_form_num = next
 
     def next_form(self):
-        next_form_num = str(int(Form.current_form_num) + 1)
-        self.master.switch_forms("Form" + Form.current_form_num, "Form" + next_form_num)
+        curr = Form.curr_form_num
+        next = curr + 1
+        
+        self.master.switch_forms("Form" + str(curr), "Form" + str(next))
         # update the current form number:
-        Form.current_form_num = next_form_num
+        Form.curr_form_num = next
 
     def previous_form(self):
-        next_form_num = str(int(Form.current_form_num) - 1)
-        self.master.switch_forms("Form" + Form.current_form_num, "Form" + next_form_num)
+        curr = Form.curr_form_num
+        next = curr - 1
+        self.master.switch_forms("Form" + str(curr), "Form" + str(next))
         # update the current form number:
-        Form.current_form_num = next_form_num
+        Form.curr_form_num = next
 
     def set_layout(self):
         self.grid(row=1, column=0, padx=0, pady=0, sticky="nesw")
@@ -139,12 +144,12 @@ class Form1(Form):
 
         self.bind(
             "<Configure>", lambda x: guide_label.configure(wraplength=x.width - 100)
-        )  # Sets an auto wraper based on the windows width for been responsive
+        )  # Sets an auto warper based on the windows width for been responsive
 
         guide_label.grid(row=1, column=1, pady=20, padx=10, sticky="e")
 
         # row 2, buttons:
-        btn_ready = ctk.CTkButton(self, text="موافقم", command=self.next_form)
+        btn_ready = ctk.CTkButton(self, font=parent.font , text="موافقم", command=self.next_form)
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
 
 
@@ -158,16 +163,64 @@ class Form2(Form):
     def set_layout(self):
         return super().set_layout()
 
+    def browse_path(self):
+        path = filedialog.askdirectory()
+        if path:
+            self.path_entry.delete(0, ctk.END)
+            self.path_entry.insert(0, path)
+            
     def load_widgets(self, parent):
         
-        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
-        info_lbl.grid(row=0, column=0)
+        font = ('Tahoma', 12, 'normal')
+    
+        # Row 1 , 2: Radio buttons for scanning options
         
-        next_button = ctk.CTkButton(self, text="ادامه", command=self.next_form)
-        next_button.grid(row=1, column=0, pady=12, padx=10)
+        row01 = ctk.CTkFrame(self, bg_color='transparent')
+        row01.grid(row=0, column=3)
+        
+        scan_mode_var = ctk.StringVar(value="system")
 
-        back_button = ctk.CTkButton(self, text="بازشگت", command=self.previous_form)
-        back_button.grid(row=1, column=1, pady=12, padx=10)
+        system_label = ctk.CTkLabel(row01, text="اسکن کل سیستم", font=font, anchor='e')
+        specific_path_label = ctk.CTkLabel(row01, text="اسکن یک مسیر خاص", font=font, anchor='e')
+    
+        radio_system = ctk.CTkRadioButton(row01, text="", variable=scan_mode_var, value="system", font=font)
+        radio_specific_path = ctk.CTkRadioButton(row01, text="", variable=scan_mode_var, value="path", font=font)
+
+        radio_system.pack()        
+        system_label.pack(anchor= 'e', side='left')
+        
+        radio_specific_path.pack(side='bottom')
+        # specific_path_label.grid(row=1, column=3, sticky="e", pady=10)
+
+        # # Row 3: Path input for specific path scan
+        # path_label = ctk.CTkLabel(self, text=":مسیر")
+        # self.path_entry = ctk.CTkEntry(self, width=300)
+        # browse_button = ctk.CTkButton(self, text="مرور", command=self.browse_path)
+
+        # path_label.grid(row=3, column=2, sticky="e", padx=10, pady=10)
+        # self.path_entry.grid(row=3, column=1, sticky="e", padx=10, pady=10)
+        # browse_button.grid(row=3, column=0, sticky="e", padx=10, pady=10)
+
+        # # Row 4: Deep scan check button
+        # deep_scan_var = ctk.BooleanVar()
+        # deep_scan_check = ctk.CTkCheckBox(self, text="اسکن عمیق", variable=deep_scan_var)
+        # deep_scan_check.grid(row=4, column=3, sticky="e", padx=10, pady=10)
+
+        # # Row 5: Dropdown for resource allocation
+        # resource_label = ctk.CTkLabel(self, text="میزان اختصاص منابع:")
+        # resource_var = ctk.StringVar(value="متوسط")
+        # resource_dropdown = ctk.CTkOptionMenu(self, values=["کم", "متوسط", "زیاد"], variable=resource_var)
+
+        # resource_label.grid(row=5, column=3, sticky="e", padx=10, pady=10)
+        # resource_dropdown.grid(row=5, column=2, sticky="e", padx=10, pady=10)
+
+        # Row 6: Navigation buttons
+        
+        next_button = ctk.CTkButton(self, font=font , text="ادامه", command=self.next_form)
+        next_button.grid(row=6, column=0, pady=12)
+
+        back_button = ctk.CTkButton(self, font=font, text="بازشگت", command=self.previous_form)
+        back_button.grid(row=6, column=1, pady=12)
 
 
 class Form3(Form):
@@ -247,7 +300,7 @@ class Form5(Form):
 
     # Function to handle the click on the "درباره" step
     def on_about_click(self, event):
-        print(Form.current_form_num)
+        # print(Form.current_form_num)
         self.jump_to_form("Form5")
 
     def load_widgets(self, parent):
