@@ -39,6 +39,7 @@ class UserInterface(ctk.CTk):
         self.iconbitmap("./media/tiny_icon.ico")
 
         self.font = ctk.CTkFont(font)
+        self.font_bold = ctk.CTkFont(font, 15, 'bold')
 
         self.columnconfigure(0, weight=20)
         self.columnconfigure(1, weight=1)
@@ -80,17 +81,17 @@ class UserInterface(ctk.CTk):
         ]
 
         # Create labels for each step in the sidebar:
-        step_labels = []
+        step_tk_labels = []
         for i, step in enumerate(steps):
-            text_label = ctk.CTkLabel(self.sidebar, text=step['text'], font=font)
-            text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky='e')
+            text_label = ctk.CTkLabel(self.sidebar, text=step["text"], font=font)
+            text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
 
-            icon_label = ctk.CTkLabel(self.sidebar, text=step['icon'], font=font)
+            icon_label = ctk.CTkLabel(self.sidebar, text=step["icon"], font=font)
             icon_label.grid(row=i, column=1)
 
             # Add hover and click effect for "درباره"
             if step["text"] == "درباره":
-                text_label.bind("<Button-1>", lambda e: self.on_about_click())
+                text_label.bind("<Button-1>", self.on_about_click)
                 text_label.bind(
                     "<Enter>", lambda e, lbl=text_label: self.on_enter(e, lbl)
                 )
@@ -98,31 +99,25 @@ class UserInterface(ctk.CTk):
                     "<Leave>", lambda e, lbl=text_label: self.on_leave(e, lbl)
                 )
 
-            step_labels.append({"text_label": text_label, "icon_label": icon_label})
+            step_tk_labels.append({"text_label": text_label, "icon_label": icon_label})
 
         # Highlight the first step as the current step
-        self.update_step_label(step_labels[0])
+        self.update_step_label(step_tk_labels[0])
 
     def update_step_label(self, label):
         # Function to update the current step's label to bold
-        # for lbl in step_labels:
-        #     lbl['text_label'].configure(font=("Arial", 12, "normal"), text_color="white")
-        # label['text_label'].configure(font=("Arial", 12, "bold"), text_color="white")
-        print("update")
+        label['text_label'].configure(font=self.font_bold, text_color="white")
+        label['icon_label'].configure(font=self.font_bold, text_color="white")
 
     # Function to handle the hover effect for the "درباره" step
-    def on_enter(event, label):
-        label.configure(
-            font=("Arial", 12, "underline"), text_color="#00ccff"
-        )  # Underline and change color
+    def on_enter(self, event, label):
+        label.configure(text_color="#00ccff")  # Underline and change color
 
-    def on_leave(event, label):
-        label.configure(
-            font=("Arial", 12), text_color="white"
-        )  # Remove underline and restore color
+    def on_leave(self, event, label):
+        label.configure(text_color="white")  # Remove underline and restore color
 
     # Function to handle the click on the "درباره" step
-    def on_about_click(self):
+    def on_about_click(self, event):
         print("درباره clicked!")
 
     def initialize_forms(self) -> None:
@@ -131,7 +126,9 @@ class UserInterface(ctk.CTk):
 
         # Each Form class girds.() itself; hence we initilize from last to the first Form
         #    the Form1 one will be grid() at last:
-        for form_name, form_class in reversed(inspect.getmembers(module_forms, inspect.isclass)):
+        for form_name, form_class in reversed(
+            inspect.getmembers(module_forms, inspect.isclass)
+        ):
             if issubclass(form_class, ctk.CTkFrame):
                 if form_name != "Form":
                     self.frames[form_name] = form_class(self)
