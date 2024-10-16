@@ -2,6 +2,7 @@ import customtkinter as ctk
 from widgets.ctk_widget import CTkMeter
 from tkinter import END, filedialog
 from abc import ABC, abstractmethod
+import typing
 
 
 class Form(ABC, ctk.CTkFrame):
@@ -51,18 +52,14 @@ class Form(ABC, ctk.CTkFrame):
             raise FileExistsError(
                 f"sidebar widget for the {self.__class__.__name__} has been called before. try getting the widget by calling get_sidebar_widget()"
             )
-            
-        text_label = ctk.CTkLabel(
-            sidebar, text=self.step_name, font=self.master.font
-        )
-        icon_label = ctk.CTkLabel(
-            sidebar, text=self.step_icon, font=self.master.font
-        )
+
+        text_label = ctk.CTkLabel(sidebar, text=self.step_name, font=self.master.font)
+        icon_label = ctk.CTkLabel(sidebar, text=self.step_icon, font=self.master.font)
         self.sidebar_widget = text_label, icon_label
 
         return self.get_sidebar_widget()
 
-    def get_sidebar_widget(self):
+    def get_sidebar_widget(self) -> typing.Tuple[ctk.CTkLabel, ctk.CTkLabel]:
         if self.sidebar_widget:
             return self.sidebar_widget
 
@@ -166,11 +163,65 @@ class Form3(Form):
         back_button.grid(row=1, column=1, pady=12, padx=10)
 
 
-# # Define the steps with icons and labels
-# steps = [
-#     {"text": "توافقنامه", "icon": "📝"},
-#     {"text": "تنظیمات اسکن", "icon": "⚙️"},
-#     {"text": "اسکن", "icon": "🔍"},
-#     {"text": "نتیجه", "icon": "📊"},
-#     {"text": "درباره", "icon": "ℹ️"},
-# ]
+class Form4(Form):
+    step_name = "نتیجه"
+    step_icon = "📊"
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def load_widgets(self, parent):
+        pass
+
+
+class Form5(Form):
+    step_name = "درباره"
+    step_icon = "ℹ "
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def set_sidebar_widget(self, sidebar: ctk.CTkFrame):
+        sidebar_widget = super().set_sidebar_widget(sidebar)
+        self.click_effect()
+        return sidebar_widget
+
+    def click_effect(self):
+        # Add hover and click effect for "درباره"
+        text_tklabel, icon_tklabel = self.get_sidebar_widget()
+
+        # for the text:
+        text_tklabel.bind("<Button-1>", self.on_about_click)
+        text_tklabel.bind(
+            "<Enter>", lambda e, lbl=(text_tklabel, icon_tklabel): self.on_enter(e, lbl)
+        )
+        text_tklabel.bind(
+            "<Leave>", lambda e, lbl=(text_tklabel, icon_tklabel): self.on_leave(e, lbl)
+        )
+
+        # for the icon:
+        icon_tklabel.bind(
+            "<Enter>", lambda e, lbl=(text_tklabel, icon_tklabel): self.on_enter(e, lbl)
+        )
+        icon_tklabel.bind(
+            "<Leave>", lambda e, lbl=(text_tklabel, icon_tklabel): self.on_leave(e, lbl)
+        )
+
+        # Function to handle the hover effect for the "درباره" step
+
+    def on_enter(self, event, label):
+        # label[0] is text and label[1] is the icon:
+        label[0].configure(text_color="#00ccff")  # Underline and change color
+        label[1].configure(text_color="#00ccff")  # Underline and change color
+
+    def on_leave(self, event, label):
+        # label[0] is text and label[1] is the icon:
+        label[0].configure(text_color="white")  # Remove underline and restore color
+        label[1].configure(text_color="white")  # Remove underline and restore color
+
+    # Function to handle the click on the "درباره" step
+    def on_about_click(self, event):
+        print("about clicked!")
+
+    def load_widgets(self, parent):
+        pass

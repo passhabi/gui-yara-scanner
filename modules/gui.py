@@ -73,28 +73,20 @@ class UserInterface(ctk.CTk):
                 "The function initialize_forms should be called beforehand."
             )
 
+        # make a sidebar frame. a place that each step will be added:
         self.sidebar = ctk.CTkFrame(self, fg_color="transparent", width=200)
         self.sidebar.grid(row=1, column=1, padx=(0, 50), pady=30, sticky="nse")
 
-        # get labels for each step in the sidebar:
+        # get labels and icon for each step and put them on the sidebar:
         step_tk_labels = []
         for i, form in enumerate(reversed(self.frames.values())):
             
             text_label, icon_label = form.set_sidebar_widget(self.sidebar)
             
+            # place each step (Form) inside the sidebar:
             text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
             icon_label.grid(row=i, column=1)
-
-            # Add hover and click effect for "درباره"
-            if text_label == "درباره":
-                text_label.bind("<Button-1>", self.on_about_click)
-                text_label.bind(
-                    "<Enter>", lambda e, lbl=text_label: self.on_enter(e, lbl)
-                )
-                text_label.bind(
-                    "<Leave>", lambda e, lbl=text_label: self.on_leave(e, lbl)
-                )
-
+                
             step_tk_labels.append({"text_label": text_label, "icon_label": icon_label})
 
         # Highlight the first step as the current step
@@ -105,15 +97,6 @@ class UserInterface(ctk.CTk):
         label["text_label"].configure(font=self.font_bold, text_color="white")
         label["icon_label"].configure(font=self.font_bold, text_color="white")
 
-    # Function to handle the hover effect for the "درباره" step
-    def on_enter(self, event, label):
-        label.configure(text_color="#00ccff")  # Underline and change color
-
-    def on_leave(self, event, label):
-        label.configure(text_color="white")  # Remove underline and restore color
-
-    # Function to handle the click on the "درباره" step
-    def on_about_click(self, event):
         print("درباره clicked!")
 
     def initialize_forms(self) -> None:
