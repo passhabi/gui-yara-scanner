@@ -6,6 +6,7 @@ from tkinter import ttk
 from PIL import Image
 import importlib
 import inspect
+from exceptions import DependencyError
 
 
 class UserInterface(ctk.CTk):
@@ -15,13 +16,13 @@ class UserInterface(ctk.CTk):
         # treat windows, app or root as self!
 
         window_size = 800, 500
-        self.window_layout(window_size, "Tahoma")
+        self.window_layout(window_size)
 
         self.frames = {}  # this is to store forms (tk frames)
         self.initialize_forms()
         self.add_sidebar()
 
-    def window_layout(self, window_size, font):
+    def window_layout(self, window_size, font="Tahoma"):
         """Config Window Appearance and layout.
 
         Args:
@@ -39,7 +40,7 @@ class UserInterface(ctk.CTk):
         self.iconbitmap("./media/tiny_icon.ico")
 
         self.font = ctk.CTkFont(font)
-        self.font_bold = ctk.CTkFont(font, 15, 'bold')
+        self.font_bold = ctk.CTkFont(font, 15, "bold")
 
         self.columnconfigure(0, weight=20)
         self.columnconfigure(1, weight=1)
@@ -66,31 +67,32 @@ class UserInterface(ctk.CTk):
         self.geometry(f"{width}x{height}+{x}+{y}")
 
     def add_sidebar(self, font=("Tahoma", 14)):
+
+        if self.frames == {}:
+            raise DependencyError(
+                "The function initialize_forms should be called beforehand."
+            )
+
         self.sidebar = ctk.CTkFrame(self, fg_color="transparent", width=200)
         self.sidebar.grid(row=1, column=1, padx=(0, 50), pady=30, sticky="nse")
-        # self.sidebar.grid_rowconfigure(5, weight=1)
-        # self.sidebar.grid_columnconfigure(2, weight=1)
 
-        # Define the steps with icons and labels
-        steps = [
-            {"text": "توافقنامه", "icon": "📝"},
-            {"text": "تنظیمات اسکن", "icon": "⚙️"},
-            {"text": "اسکن", "icon": "🔍"},
-            {"text": "نتیجه", "icon": "📊"},
-            {"text": "درباره", "icon": "ℹ "},
-        ]
-
-        # Create labels for each step in the sidebar:
+        # get labels for each step in the sidebar:
         step_tk_labels = []
-        for i, step in enumerate(steps):
-            text_label = ctk.CTkLabel(self.sidebar, text=step["text"], font=font)
+        for i, form in enumerate(reversed(self.frames.values())):
+            
+            print(type(form))
+            text_label = ctk.CTkLabel(
+                self.sidebar, text=form.get_step_name(), font=font
+            )
             text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
 
-            icon_label = ctk.CTkLabel(self.sidebar, text=step["icon"], font=font)
+            icon_label = ctk.CTkLabel(
+                self.sidebar, text=form.get_step_icon(), font=font
+            )
             icon_label.grid(row=i, column=1)
 
             # Add hover and click effect for "درباره"
-            if step["text"] == "درباره":
+            if form.get_step_name() == "درباره":
                 text_label.bind("<Button-1>", self.on_about_click)
                 text_label.bind(
                     "<Enter>", lambda e, lbl=text_label: self.on_enter(e, lbl)
@@ -106,8 +108,8 @@ class UserInterface(ctk.CTk):
 
     def update_step_label(self, label):
         # Function to update the current step's label to bold
-        label['text_label'].configure(font=self.font_bold, text_color="white")
-        label['icon_label'].configure(font=self.font_bold, text_color="white")
+        label["text_label"].configure(font=self.font_bold, text_color="white")
+        label["icon_label"].configure(font=self.font_bold, text_color="white")
 
     # Function to handle the hover effect for the "درباره" step
     def on_enter(self, event, label):
@@ -130,7 +132,8 @@ class UserInterface(ctk.CTk):
             inspect.getmembers(module_forms, inspect.isclass)
         ):
             if issubclass(form_class, ctk.CTkFrame):
-                if form_name != "Form":
+                if form_name != "Form":  # not the abstract class From
+                    # save the Forms in frames and intilize it with root app:
                     self.frames[form_name] = form_class(self)
 
     def switch_between_forms(self, current_form: str, next_form: str):

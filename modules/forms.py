@@ -23,10 +23,24 @@ class Form(ABC, ctk.CTkFrame):
     def load_widgets(self, parent):
         pass
 
+    @abstractmethod
+    def get_step_name(self):
+        """This function returns the Form name.
+        the name is dict{text, icon}
+        """
+        pass
+     ## todo: addd step icon
 
 class Form1(Form):
     def __init__(self, parent: ctk.CTk):
         super().__init__(parent)
+        
+    def get_step_name(self):
+        return 'توافقنامه'
+    
+    
+    def get_step_icon(self):
+        return '📝'
 
     def set_layout(self):
         self.grid(row=1, column=0, padx=0, pady=0, sticky="nesw")
@@ -82,6 +96,14 @@ class Form2(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
+    def get_step_name(self):
+        return 'تنظیمات اسکن'
+    
+    
+    def get_step_icon(self):
+        return '⚙️'
+
+    
     def set_layout(self):
         return super().set_layout()
         
@@ -97,6 +119,26 @@ class Form3(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
+    def get_step_name(self):
+        return 'جستوجو و بررسی'
+    
+    
+    def get_step_icon(self):
+        return '🔍'
+
+    
     def load_widgets(self, parent):
         back_button = ctk.CTkButton(self, text="بازشگت", command=lambda: self.show_form('Form2'))
         back_button.grid(row=1, column=1, pady=12, padx=10)
+
+
+
+
+# # Define the steps with icons and labels
+# steps = [
+#     {"text": "توافقنامه", "icon": "📝"},
+#     {"text": "تنظیمات اسکن", "icon": "⚙️"},
+#     {"text": "اسکن", "icon": "🔍"},
+#     {"text": "نتیجه", "icon": "📊"},
+#     {"text": "درباره", "icon": "ℹ️"},
+# ]
