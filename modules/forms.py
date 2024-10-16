@@ -5,11 +5,34 @@ from abc import ABC, abstractmethod
 
 
 class Form(ABC, ctk.CTkFrame):
+    # class attributes:
+    @property
+    @abstractmethod
+    def step_name(self):
+        """Abstract variable that must be implemented in child classes."""
+        pass
+
+    @step_name.setter
+    @abstractmethod
+    def step_name(self, value):
+        pass
+
+    @property
+    @abstractmethod
+    def step_icon(self):
+        pass
+
+    @step_icon.setter
+    @abstractmethod
+    def step_icon(self, value):
+        pass
+
     def __init__(self, parent: ctk.CTk, **kwargs):
         super().__init__(master=parent, width=500, **kwargs)
 
         self.set_layout()
         self.load_widgets(parent)
+        self.sidebar_widget = None
 
     def show_form(self, switch_to: str):
         current_form = self.__class__.__name__
@@ -23,24 +46,35 @@ class Form(ABC, ctk.CTkFrame):
     def load_widgets(self, parent):
         pass
 
-    @abstractmethod
-    def get_step_name(self):
-        """This function returns the Form name.
-        the name is dict{text, icon}
-        """
-        pass
-     ## todo: addd step icon
+    def set_sidebar_widget(self, sidebar: ctk.CTkFrame):
+        if self.sidebar_widget:
+            raise FileExistsError(
+                f"sidebar widget for the {self.__class__.__name__} has been called before. try getting the widget by calling get_sidebar_widget()"
+            )
+            
+        text_label = ctk.CTkLabel(
+            sidebar, text=self.step_name, font=self.master.font
+        )
+        icon_label = ctk.CTkLabel(
+            sidebar, text=self.step_icon, font=self.master.font
+        )
+        self.sidebar_widget = text_label, icon_label
+
+        return self.get_sidebar_widget()
+
+    def get_sidebar_widget(self):
+        if self.sidebar_widget:
+            return self.sidebar_widget
+
+        raise ValueError("sidebar_widget hasn't been set.")
+
 
 class Form1(Form):
+    step_name = "توافقنامه"
+    step_icon = "📝"
+
     def __init__(self, parent: ctk.CTk):
         super().__init__(parent)
-        
-    def get_step_name(self):
-        return 'توافقنامه'
-    
-    
-    def get_step_icon(self):
-        return '📝'
 
     def set_layout(self):
         self.grid(row=1, column=0, padx=0, pady=0, sticky="nesw")
@@ -55,7 +89,9 @@ class Form1(Form):
             font=self.master.font,
             corner_radius=2,
         )
-        agreement_textbox.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=(10, 0))
+        agreement_textbox.grid(
+            row=0, column=0, columnspan=2, sticky="nsew", padx=(10, 0)
+        )
         agreement_textbox.tag_config("rtl", justify="right")
 
         # use FixTxt to insert the rtl text, https://fixtxt.co/
@@ -88,50 +124,46 @@ class Form1(Form):
         guide_label.grid(row=1, column=1, pady=20, padx=10, sticky="e")
 
         # row 2, buttons:
-        btn_ready = ctk.CTkButton(self, text="موافقم", command=lambda: self.show_form('Form2'))
+        btn_ready = ctk.CTkButton(
+            self, text="موافقم", command=lambda: self.show_form("Form2")
+        )
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
 
 
 class Form2(Form):
+    step_name = "تنظیمات اسکن"
+    step_icon = "⚙️"
+
     def __init__(self, parent):
         super().__init__(parent)
 
-    def get_step_name(self):
-        return 'تنظیمات اسکن'
-    
-    
-    def get_step_icon(self):
-        return '⚙️'
-
-    
     def set_layout(self):
         return super().set_layout()
-        
+
     def load_widgets(self, parent):
-        next_button = ctk.CTkButton(self, text="ادامه", command=lambda: self.show_form('Form3'))
+        next_button = ctk.CTkButton(
+            self, text="ادامه", command=lambda: self.show_form("Form3")
+        )
         next_button.grid(row=1, column=0, pady=12, padx=10)
-        
-        back_button = ctk.CTkButton(self, text="بازشگت", command=lambda: self.show_form('Form1'))
+
+        back_button = ctk.CTkButton(
+            self, text="بازشگت", command=lambda: self.show_form("Form1")
+        )
         back_button.grid(row=1, column=1, pady=12, padx=10)
 
 
 class Form3(Form):
+    step_name = "بررسی"
+    step_icon = "🔍"
+
     def __init__(self, parent):
         super().__init__(parent)
 
-    def get_step_name(self):
-        return 'جستوجو و بررسی'
-    
-    
-    def get_step_icon(self):
-        return '🔍'
-
-    
     def load_widgets(self, parent):
-        back_button = ctk.CTkButton(self, text="بازشگت", command=lambda: self.show_form('Form2'))
+        back_button = ctk.CTkButton(
+            self, text="بازشگت", command=lambda: self.show_form("Form2")
+        )
         back_button.grid(row=1, column=1, pady=12, padx=10)
-
-
 
 
 # # Define the steps with icons and labels

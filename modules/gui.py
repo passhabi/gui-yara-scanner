@@ -80,19 +80,13 @@ class UserInterface(ctk.CTk):
         step_tk_labels = []
         for i, form in enumerate(reversed(self.frames.values())):
             
-            print(type(form))
-            text_label = ctk.CTkLabel(
-                self.sidebar, text=form.get_step_name(), font=font
-            )
+            text_label, icon_label = form.set_sidebar_widget(self.sidebar)
+            
             text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
-
-            icon_label = ctk.CTkLabel(
-                self.sidebar, text=form.get_step_icon(), font=font
-            )
             icon_label.grid(row=i, column=1)
 
             # Add hover and click effect for "درباره"
-            if form.get_step_name() == "درباره":
+            if text_label == "درباره":
                 text_label.bind("<Button-1>", self.on_about_click)
                 text_label.bind(
                     "<Enter>", lambda e, lbl=text_label: self.on_enter(e, lbl)
@@ -126,14 +120,14 @@ class UserInterface(ctk.CTk):
         # load all forms(tk frames):
         module_forms = importlib.import_module("forms")
 
-        # Each Form class girds.() itself; hence we initilize from last to the first Form
+        # Each Form class girds.() itself; hence we initialize from last to the first Form
         #    the Form1 one will be grid() at last:
         for form_name, form_class in reversed(
             inspect.getmembers(module_forms, inspect.isclass)
         ):
             if issubclass(form_class, ctk.CTkFrame):
                 if form_name != "Form":  # not the abstract class From
-                    # save the Forms in frames and intilize it with root app:
+                    # save the Forms in frames and initialize it with root app:
                     self.frames[form_name] = form_class(self)
 
     def switch_between_forms(self, current_form: str, next_form: str):
