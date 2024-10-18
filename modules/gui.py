@@ -26,6 +26,7 @@ class UserInterface(ctk.CTk):
 
         # Add sidebar to root window:
         sidebar = Sidebar(self, frames)
+        Form.set_sidebar(sidebar)
 
     def window_layout(self, window_size, font="Tahoma"):
         """Config Window Appearance and layout.

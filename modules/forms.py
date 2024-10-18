@@ -9,6 +9,7 @@ class Form(ABC, ctk.CTkFrame):
     # static variables:
     curr_form_num = 0  # keep track of active Form
     frames = {}  # keep all forms here.
+    sidebar = None
 
     @staticmethod
     def load_forms(root_window: ctk.CTk):
@@ -50,6 +51,15 @@ class Form(ABC, ctk.CTkFrame):
         #     raise ValueError("Forms are not loaded. Load the frames using Form.load_forms() method")
 
     @staticmethod
+    def update_indexes(form_num: int):
+        # update the current form number:
+        Form.curr_form_num = form_num
+
+        # update the sidebar:
+        if Form.sidebar:
+            Form.sidebar.update_step(form_num)
+
+    @staticmethod
     def get_grid_kwargs():
         return {'row': 1, 'column': 0, 'padx': 5, 'pady': 0, 'sticky': "nesw"}
 
@@ -59,8 +69,7 @@ class Form(ABC, ctk.CTkFrame):
         Form.frames["Form" + str(curr)].grid_remove()
         Form.frames[switch_to].grid(**Form.get_grid_kwargs())
 
-        # update the current form number:
-        Form.curr_form_num = int(switch_to[4])  # take out the number in string. e.g. Form1
+        Form.update_indexes(int(switch_to[4]))
 
     @staticmethod
     def next_form():
@@ -72,8 +81,11 @@ class Form(ABC, ctk.CTkFrame):
 
         Form.frames["Form" + str(next)].grid(**Form.get_grid_kwargs())
 
-        # update the current form number:
-        Form.curr_form_num = next
+        Form.update_indexes(next)
+
+    @staticmethod
+    def set_sidebar(sidebar: 'Sidebar'):
+        Form.sidebar = sidebar
 
     @staticmethod
     def previous_form():
@@ -83,8 +95,7 @@ class Form(ABC, ctk.CTkFrame):
         Form.frames["Form" + str(curr)].grid_remove()
         Form.frames["Form" + str(next)].grid(**Form.get_grid_kwargs())
 
-        # update the current form number:
-        Form.curr_form_num = next
+        Form.update_indexes(next)
 
     @abstractmethod
     def load_widgets(self, parent):
@@ -94,7 +105,7 @@ class Form(ABC, ctk.CTkFrame):
     def set_layout(self):
         pass
 
-    def set_sidebar_widget(
+    def generate_tk_wgt_for_sidebar(
             self, sidebar: ctk.CTkFrame
     ) -> typing.Tuple[ctk.CTkLabel, ctk.CTkLabel]:
         if self.sidebar_widget:
@@ -118,29 +129,47 @@ class Form(ABC, ctk.CTkFrame):
 class Sidebar(ctk.CTkFrame):
     def __init__(self, root_window: ctk.CTk, frames: typing.Dict[str, ctk.CTkFrame]):
         super().__init__(root_window, fg_color="transparent", width=200)
+
         self.grid(row=1, column=1, padx=(0, 50), pady=30, sticky="nse")
 
         self.font = root_window.font
         self.font_bold = root_window.font_bold
 
+        self.active_num: int = 0  # keep track of active(current) From number
+
         # get labels and icon for each step and put them on the sidebar:
-        step_tk_labels = []
+        self.sidebar_wgts = []  # store each Form sidebar widget
         for i, form in enumerate(frames.values()):
-            text_label, icon_label = form.set_sidebar_widget(self)
+            # place each step (each Form) inside the sidebar, and get the objs:
+            form.generate_tk_wgt_for_sidebar(self)
+            text_label_wgt, icon_label_wgt = form.get_sidebar_widget()
 
-            # place each step (Form) inside the sidebar:
-            text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
-            icon_label.grid(row=i, column=1)
+            text_label_wgt.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
+            icon_label_wgt.grid(row=i, column=1)
 
-            step_tk_labels.append({"text_label": text_label, "icon_label": icon_label})
+            self.sidebar_wgts.append(
+                {
+                    "text": text_label_wgt,
+                    "icon": icon_label_wgt
+                }
+            )
 
         # Highlight the first step as the current step
-        self.update_step_label(step_tk_labels[0])  # passing the first item.
+        self.update_step(1)  # passing the first item.
 
-    def update_step_label(self, label):
-        # Function to update the current step's label to bold
-        label["text_label"].configure(font=self.font_bold, text_color="white")
-        label["icon_label"].configure(font=self.font_bold, text_color="white")
+    def update_step(self, form_num: int):
+        # update the active index:
+        form_num -= 1
+
+        # remove the visual form previous item:
+        self.sidebar_wgts[self.active_num]['text'].configure(font=self.font)
+        self.sidebar_wgts[self.active_num]['icon'].configure(font=self.font)
+
+        # add visuals to active form(label and icon tk widget in the sidebar):
+        self.sidebar_wgts[form_num]['text'].configure(font=self.font_bold)
+        self.sidebar_wgts[form_num]['icon'].configure(font=self.font_bold)
+
+        self.active_num = form_num
 
 
 class Form1(Form):
@@ -312,8 +341,8 @@ class Form5(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
-    def set_sidebar_widget(self, sidebar: ctk.CTkFrame):
-        sidebar_widget = super().set_sidebar_widget(sidebar)
+    def generate_tk_wgt_for_sidebar(self, sidebar: ctk.CTkFrame):
+        sidebar_widget = super().generate_tk_wgt_for_sidebar(sidebar)
         self.add_sidebar_mouse_effect()
         return sidebar_widget
 
