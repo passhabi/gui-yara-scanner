@@ -1,11 +1,8 @@
 import customtkinter as ctk
 from tkinter import *
 from tkinter import ttk
-
-# from forms import * # it will loaded with importlib
 from PIL import Image
-import importlib
-import inspect
+from modules.forms import Form
 from exceptions import DependencyError
 
 
@@ -80,7 +77,6 @@ class UserInterface(ctk.CTk):
         # get labels and icon for each step and put them on the sidebar:
         step_tk_labels = []
         for i, form in enumerate(reversed(self.frames.values())):
-
             text_label, icon_label = form.set_sidebar_widget(self.sidebar)
 
             # place each step (Form) inside the sidebar:
@@ -98,19 +94,8 @@ class UserInterface(ctk.CTk):
         label["icon_label"].configure(font=self.font_bold, text_color="white")
 
     def initialize_forms(self) -> None:
-        # load all forms(tk frames):
-        module_forms = importlib.import_module("forms")
-        # todo: move it to the Form class.
-        
-        # Each Form class girds.() itself; hence we initialize from last to the first Form
-        #    the Form1 one will be grid() at last:
-        for form_name, form_class in reversed(
-            inspect.getmembers(module_forms, inspect.isclass)
-        ):
-            if issubclass(form_class, ctk.CTkFrame):
-                if form_name != "Form":  # not the abstract class From
-                    # save the Forms in frames and initialize it with root app:
-                    self.frames[form_name] = form_class(self)
+
+        self.frames = {cls.__name__: cls(self) for cls in Form.__subclasses__()}
 
     def switch_forms(self, current_form: str, next_form: str):
         # todo: move it to the Form class.
