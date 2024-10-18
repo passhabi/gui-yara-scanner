@@ -116,12 +116,12 @@ class Form(ABC, ctk.CTkFrame):
 
 
 class Sidebar(ctk.CTkFrame):
-    def __init__(self, root_window: ctk.CTk, frames: typing.Dict[str, ctk.CTkFrame], font='Tahoma'):
+    def __init__(self, root_window: ctk.CTk, frames: typing.Dict[str, ctk.CTkFrame]):
         super().__init__(root_window, fg_color="transparent", width=200)
         self.grid(row=1, column=1, padx=(0, 50), pady=30, sticky="nse")
 
-        self.font = ctk.CTkFont(font)
-        self.font_bold = ctk.CTkFont(font, 15, "bold")
+        self.font = root_window.font
+        self.font_bold = root_window.font_bold
 
         # get labels and icon for each step and put them on the sidebar:
         step_tk_labels = []

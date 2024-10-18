@@ -13,13 +13,18 @@ class UserInterface(ctk.CTk):
         # treat windows, app or root as self!
 
         window_size = 800, 500
+        font = 'Tahoma'
+
+        self.font = ctk.CTkFont(font, size=13)
+        self.font_bold = ctk.CTkFont(font, 15, "bold")
+
         self.window_layout(window_size)
 
         # loads all forms:
         frames = Form.load_forms(self)  # store forms (tk frames)
         Form.next_form()  # show the Form1
 
-        # makes a sidebar
+        # Add sidebar to root window:
         sidebar = Sidebar(self, frames)
 
     def window_layout(self, window_size, font="Tahoma"):
@@ -38,9 +43,6 @@ class UserInterface(ctk.CTk):
         ctk.set_appearance_mode("Dark")  # default
 
         self.iconbitmap("./media/tiny_icon.ico")
-
-        self.font = ctk.CTkFont(font)
-        self.font_bold = ctk.CTkFont(font, 15, "bold")
 
         self.columnconfigure(0, weight=20)
         self.columnconfigure(1, weight=1)
