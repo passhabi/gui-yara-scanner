@@ -15,8 +15,12 @@ class UserInterface(ctk.CTk):
         window_size = 800, 500
         self.window_layout(window_size)
 
-        self.frames = {}  # this is to store forms (tk frames)
-        self.initialize_forms()
+        # loads all forms:
+        self.frames = Form.load_forms(self)  # store forms (tk frames)
+        Form.next_form()  # show the Form1
+
+        # makes a sidebar
+        self.sidebar = ctk.CTkFrame(self, fg_color="transparent", width=200)
         self.add_sidebar()
 
     def window_layout(self, window_size, font="Tahoma"):
@@ -67,16 +71,15 @@ class UserInterface(ctk.CTk):
 
         if self.frames == {}:
             raise DependencyError(
-                "The function initialize_forms should be called beforehand."
+                "The function load_forms from Forms should be called beforehand."
             )
 
         # make a sidebar frame. a place that each step will be added:
-        self.sidebar = ctk.CTkFrame(self, fg_color="transparent", width=200)
         self.sidebar.grid(row=1, column=1, padx=(0, 50), pady=30, sticky="nse")
 
         # get labels and icon for each step and put them on the sidebar:
         step_tk_labels = []
-        for i, form in enumerate(reversed(self.frames.values())):
+        for i, form in enumerate(self.frames.values()):
             text_label, icon_label = form.set_sidebar_widget(self.sidebar)
 
             # place each step (Form) inside the sidebar:
@@ -92,15 +95,6 @@ class UserInterface(ctk.CTk):
         # Function to update the current step's label to bold
         label["text_label"].configure(font=self.font_bold, text_color="white")
         label["icon_label"].configure(font=self.font_bold, text_color="white")
-
-    def initialize_forms(self) -> None:
-
-        self.frames = {cls.__name__: cls(self) for cls in Form.__subclasses__()}
-
-    def switch_forms(self, current_form: str, next_form: str):
-        # todo: move it to the Form class.
-        self.frames[current_form].grid_remove()
-        self.frames[next_form].grid()
 
 
 if __name__ == "__main__":
