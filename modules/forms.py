@@ -115,6 +115,34 @@ class Form(ABC, ctk.CTkFrame):
         raise ValueError("sidebar_widget hasn't been set.")
 
 
+class Sidebar(ctk.CTkFrame):
+    def __init__(self, root_window: ctk.CTk, frames: typing.Dict[str, ctk.CTkFrame], font='Tahoma'):
+        super().__init__(root_window, fg_color="transparent", width=200)
+        self.grid(row=1, column=1, padx=(0, 50), pady=30, sticky="nse")
+
+        self.font = ctk.CTkFont(font)
+        self.font_bold = ctk.CTkFont(font, 15, "bold")
+
+        # get labels and icon for each step and put them on the sidebar:
+        step_tk_labels = []
+        for i, form in enumerate(frames.values()):
+            text_label, icon_label = form.set_sidebar_widget(self)
+
+            # place each step (Form) inside the sidebar:
+            text_label.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
+            icon_label.grid(row=i, column=1)
+
+            step_tk_labels.append({"text_label": text_label, "icon_label": icon_label})
+
+        # Highlight the first step as the current step
+        self.update_step_label(step_tk_labels[0])  # passing the first item.
+
+    def update_step_label(self, label):
+        # Function to update the current step's label to bold
+        label["text_label"].configure(font=self.font_bold, text_color="white")
+        label["icon_label"].configure(font=self.font_bold, text_color="white")
+
+
 class Form1(Form):
     step_name = "توافقنامه"
     step_icon = "📝"
@@ -261,6 +289,7 @@ class Form3(Form):
     def set_layout(self):
         pass
 
+
 class Form4(Form):
     step_name = "نتیجه"
     step_icon = "📊"
@@ -274,6 +303,7 @@ class Form4(Form):
 
     def set_layout(self):
         pass
+
 
 class Form5(Form):
     step_name = "درباره"
@@ -330,7 +360,6 @@ class Form5(Form):
     def load_widgets(self, parent):
         info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
         info_lbl.grid(row=0, column=0)
-
 
     def set_layout(self):
         pass
