@@ -1,8 +1,10 @@
 import customtkinter as ctk
 from widgets.ctk_widget import CTkMeter
+import tkinter as tk
 from tkinter import END, filedialog
 from abc import ABC, abstractmethod
 import typing
+import tkinter as tk
 
 
 class Form(ABC, ctk.CTkFrame):
@@ -45,10 +47,15 @@ class Form(ABC, ctk.CTkFrame):
         # if Form.frames:
         super().__init__(master=parent, width=500, **kwargs)
 
+        self.font = parent.font
+        self.font_bold = parent.font_bold
+
         self.load_widgets(parent)
-        self.sidebar_widget = None  # tk widget holders. which will be grid() later by GUI class.
-        # else:
-        #     raise ValueError("Forms are not loaded. Load the frames using Form.load_forms() method")
+        self.sidebar_widget = (
+            None  # tk widget holders. which will be grid() later by GUI class.
+        )
+
+        self.set_layout()
 
     @staticmethod
     def update_indexes(form_num: int):
@@ -60,32 +67,41 @@ class Form(ABC, ctk.CTkFrame):
             Form.sidebar.update_step(form_num)
 
     def get_grid_kwargs(self):
-        return {'row': 1, 'column': 0, 'padx': 5, 'pady': 0, 'sticky': "nesw"}
+        return {"row": 1, "column": 0, "padx": 5, "pady": 0, "sticky": "nesw"}
+
+    @classmethod
+    def next_form(cls):
+        cls.jump_to_form(mode="+")
+
+    @classmethod
+    def previous_form(cls):
+        cls.jump_to_form(mode="-")
 
     @staticmethod
-    def jump_to_form(switch_to: str):
-        # get kwargs grid parameters of the next From:
-        grid_kwargs = Form.frames[switch_to].get_grid_kwargs()
-        
-        curr = Form.curr_form_num
-        
-        Form.frames["Form" + str(curr)].grid_remove()
-        Form.frames[switch_to].grid(**grid_kwargs)
+    def jump_to_form(mode: str = "+", form_to_switch: str = None):
+        """it switch to the next (+) or previous (-) Form.
 
-        Form.update_indexes(int(switch_to[4]))
-    
-    @staticmethod
-    def next_form():        
+        Args:
+            mode (str, optional): If minus (-) has passed it goes to the previous Form if plus (+) has passed it goes to the next Form. Defaults to '+'.
+            form_to_switch (str, optional):Regardless of mode, it jumps to the Form that has been passed through form_to_switch. Defaults to None
+        """
         curr = Form.curr_form_num
-        next = curr + 1
-        
-        curr_name = "Form" + str(curr) # "Form2"
+
+        if mode == "+":
+            next = curr + 1
+        elif mode == "-":
+            next = curr - 1
+
+        if form_to_switch:
+            next = int(form_to_switch[4])
+
+        curr_name = "Form" + str(curr)  # "e.g. Form2"
         next_name = "Form" + str(next)
-        
+
         # get kwargs grid parameters of the next From:
         grid_kwargs = Form.frames[next_name].get_grid_kwargs()
 
-        if Form.curr_form_num:  # if it's not the fist time we show a Form (or if a Form has been grided before):
+        if Form.curr_form_num:  # if a Form has been grid() before: remove it.
             Form.frames[curr_name].grid_remove()
 
         Form.frames[next_name].grid(**grid_kwargs)
@@ -93,27 +109,8 @@ class Form(ABC, ctk.CTkFrame):
         Form.update_indexes(next)
 
     @staticmethod
-    def previous_form():
-        curr = Form.curr_form_num
-        next = curr - 1
-
-        curr_name = "Form" + str(curr) # "Form2"
-        next_name = "Form" + str(next)
-        
-        # get kwargs grid parameters of the next From:
-        grid_kwargs = Form.frames[next_name].get_grid_kwargs()
-
-        
-        Form.frames[curr_name].grid_remove()
-        Form.frames[next_name].grid(**grid_kwargs)
-
-        Form.update_indexes(next)
-
-
-    @staticmethod
-    def set_sidebar(sidebar: 'Sidebar'):
+    def set_sidebar(sidebar: "Sidebar"):
         Form.sidebar = sidebar
-
 
     @abstractmethod
     def load_widgets(self, parent):
@@ -124,15 +121,15 @@ class Form(ABC, ctk.CTkFrame):
         pass
 
     def generate_tk_wgt_for_sidebar(
-            self, sidebar: ctk.CTkFrame
+        self, sidebar: ctk.CTkFrame
     ) -> typing.Tuple[ctk.CTkLabel, ctk.CTkLabel]:
         if self.sidebar_widget:
             raise FileExistsError(
                 f"sidebar widget for the {self.__class__.__name__} has been called before. try getting the widget by calling get_sidebar_widget()"
             )
 
-        text_label = ctk.CTkLabel(sidebar, text=self.step_name, font=self.master.font)
-        icon_label = ctk.CTkLabel(sidebar, text=self.step_icon, font=self.master.font)
+        text_label = ctk.CTkLabel(sidebar, text=self.step_name, font=self.font)
+        icon_label = ctk.CTkLabel(sidebar, text=self.step_icon, font=self.font)
         self.sidebar_widget = text_label, icon_label
 
         return self.get_sidebar_widget()
@@ -165,27 +162,19 @@ class Sidebar(ctk.CTkFrame):
             text_label_wgt.grid(row=i, column=0, pady=10, padx=(0, 20), sticky="e")
             icon_label_wgt.grid(row=i, column=1)
 
-            self.sidebar_wgts.append(
-                {
-                    "text": text_label_wgt,
-                    "icon": icon_label_wgt
-                }
-            )
-
-        # Highlight the first step as the current step
-        self.update_step(1)  # passing the first item.
+            self.sidebar_wgts.append({"text": text_label_wgt, "icon": icon_label_wgt})
 
     def update_step(self, form_num: int):
         # update the active index:
         form_num -= 1
 
         # remove the visual form previous item:
-        self.sidebar_wgts[self.active_num]['text'].configure(font=self.font)
-        self.sidebar_wgts[self.active_num]['icon'].configure(font=self.font)
+        self.sidebar_wgts[self.active_num]["text"].configure(font=self.font)
+        self.sidebar_wgts[self.active_num]["icon"].configure(font=self.font)
 
         # add visuals to active form(label and icon tk widget in the sidebar):
-        self.sidebar_wgts[form_num]['text'].configure(font=self.font_bold)
-        self.sidebar_wgts[form_num]['icon'].configure(font=self.font_bold)
+        self.sidebar_wgts[form_num]["text"].configure(font=self.font_bold)
+        self.sidebar_wgts[form_num]["icon"].configure(font=self.font_bold)
 
         self.active_num = form_num
 
@@ -197,8 +186,6 @@ class Form1(Form):
     def __init__(self, parent: ctk.CTk):
         super().__init__(parent)
 
-        self.set_layout()
-
     def set_layout(self):
         self.grid_rowconfigure((1, 2), weight=1)
         self.grid_rowconfigure(0, weight=100)
@@ -208,7 +195,7 @@ class Form1(Form):
         # row 0, agreement text:
         agreement_textbox = ctk.CTkTextbox(
             master=self,
-            font=self.master.font,
+            font=self.font,
             corner_radius=2,
         )
         agreement_textbox.grid(
@@ -246,24 +233,24 @@ class Form1(Form):
         guide_label.grid(row=1, column=1, pady=20, padx=10, sticky="e")
 
         # row 2, buttons:
-        btn_ready = ctk.CTkButton(self, font=parent.font, text="موافقم", command=self.next_form)
+        btn_ready = ctk.CTkButton(
+            self, font=parent.font, text="موافقم", command=self.next_form
+        )
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
-        
+
 
 class Form2(Form):
     step_name = "تنظیمات اسکن"
     step_icon = "⚙️"
 
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, root):
+        super().__init__(root)
 
-    
-    def get_grid_kwargs(self):
-        return {'row': 1, 'column': 0, 'padx': 0, 'pady': 0, 'sticky': "nse"}
+        self.padx = (0, 5)
 
-    
     def set_layout(self):
-        pass
+        self.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
     def browse_path(self):
         path = filedialog.askdirectory()
@@ -272,56 +259,111 @@ class Form2(Form):
             self.path_entry.insert(0, path)
 
     def load_widgets(self, parent):
-        font = ('Tahoma', 12, 'normal')
+        font = ("Tahoma", 12, "normal")
 
-        # Row 1 , 2: Radio buttons for scanning options
+        # Row 1 , 2: Radio buttons for scanning options:
+        scan_mode_var = ctk.StringVar(value="whole_system")
 
-        row01 = ctk.CTkFrame(self, bg_color='transparent')
-        row01.grid(row=0, column=3)
+        # Create the radio buttons with labels in Persian and place them in the grid
+        radio1 = ctk.CTkRadioButton(
+            self,
+            text="",
+            variable=scan_mode_var,
+            value="whole_system",
+            # bg_color="blue",
+            width=2,
+        )
+        radio2 = ctk.CTkRadioButton(
+            self,
+            text="",
+            variable=scan_mode_var,
+            value="specific_path",
+            # bg_color="blue",
+            width=2,
+        )
 
-        scan_mode_var = ctk.StringVar(value="system")
+        # Align the labels to the right (Persian design)
+        label1 = ctk.CTkLabel(self, text="اسکن کل سیستم", anchor="e", font=self.font)
+        label2 = ctk.CTkLabel(
+            self, text="اسکن یک پوشه یا یک مسیر خاص", anchor="e", font=self.font
+        )
 
-        system_label = ctk.CTkLabel(row01, text="اسکن کل سیستم", font=font, anchor='e')
-        specific_path_label = ctk.CTkLabel(row01, text="اسکن یک مسیر خاص", font=font, anchor='e')
+        # Position the labels on the left and radio buttons on the right
+        radio1.grid(row=0, column=4, sticky="e", padx=(0, 5), pady=(20, 0))
+        label1.grid(row=0, column=3, sticky="e", padx=(0, 5), pady=(20, 0))
 
-        radio_system = ctk.CTkRadioButton(row01, text="", variable=scan_mode_var, value="system", font=font)
-        radio_specific_path = ctk.CTkRadioButton(row01, text="", variable=scan_mode_var, value="path", font=font)
+        radio2.grid(
+            row=1,
+            column=4,
+            sticky="e",
+            padx=(0, 5),
+        )
+        label2.grid(row=1, column=3, sticky="e", padx=(0, 5))
 
-        radio_system.pack()
-        system_label.pack(anchor='e', side='left')
+        # Row 3: Path input for specific path scan:
+        self.row_3()
 
-        radio_specific_path.pack(side='bottom')
-        # specific_path_label.grid(row=1, column=3, sticky="e", pady=10)
+        # Row 4: Deep scan check button:
+        self.row_4()
 
-        # # Row 3: Path input for specific path scan
-        # path_label = ctk.CTkLabel(self, text=":مسیر")
-        # self.path_entry = ctk.CTkEntry(self, width=300)
-        # browse_button = ctk.CTkButton(self, text="مرور", command=self.browse_path)
+        # Row 5: Dropdown for resource allocation
+        self.row_5()
 
-        # path_label.grid(row=3, column=2, sticky="e", padx=10, pady=10)
-        # self.path_entry.grid(row=3, column=1, sticky="e", padx=10, pady=10)
-        # browse_button.grid(row=3, column=0, sticky="e", padx=10, pady=10)
+        # Row 6: Navigation buttons:
+        self.row_6()
 
-        # # Row 4: Deep scan check button
-        # deep_scan_var = ctk.BooleanVar()
-        # deep_scan_check = ctk.CTkCheckBox(self, text="اسکن عمیق", variable=deep_scan_var)
-        # deep_scan_check.grid(row=4, column=3, sticky="e", padx=10, pady=10)
+    def row_3(self):
+        # Row 3: Path input for specific path scan:
+        path_label = ctk.CTkLabel(self, text=":مسیر", anchor="e", font=self.font)
+        self.path_entry = ctk.CTkEntry(self, width=300)
+        browse_button = ctk.CTkButton(self, text="مرور", command=self.browse_path, width=20)
 
-        # # Row 5: Dropdown for resource allocation
-        # resource_label = ctk.CTkLabel(self, text="میزان اختصاص منابع:")
-        # resource_var = ctk.StringVar(value="متوسط")
-        # resource_dropdown = ctk.CTkOptionMenu(self, values=["کم", "متوسط", "زیاد"], variable=resource_var)
+        path_label.grid(row=3, column=4, sticky="e", padx=(0, 30), pady=10)
+        self.path_entry.grid(
+            row=3, column=1, columnspan=3, sticky="e", padx=10, pady=10
+        )
+        browse_button.grid(row=3, column=0, sticky="e", padx=10, pady=10)
 
-        # resource_label.grid(row=5, column=3, sticky="e", padx=10, pady=10)
-        # resource_dropdown.grid(row=5, column=2, sticky="e", padx=10, pady=10)
+    def row_4(self):
+        # Row 4: Deep scan check button:
+        deep_scan_var = ctk.BooleanVar()
 
+        checkbox = ctk.CTkCheckBox(self, text="", variable=deep_scan_var, width=1)
+        label = ctk.CTkLabel(self, text="اسکن عمیق", anchor="e", font=self.font)
+
+        checkbox.grid(row=4, column=4, sticky="e", padx=(0, 5), pady=10)
+        label.grid(row=4, column=3, sticky="e", padx=(0, 5), pady=10)
+
+    def row_5(self):
+        # Row 5: Dropdown for resource allocation
+        label = ctk.CTkLabel(
+            self, text=": میزان اختصاص منابع به برنامه", anchor="e", font=self.font
+        )
+        resource_var = ctk.StringVar(value="متوسط")
+        dropdown = ctk.CTkOptionMenu(
+            self,
+            anchor="e",
+            dropdown_font=self.font,
+            font=self.font,
+            values=["کم", "متوسط", "زیاد"],
+            variable=resource_var,
+        )
+
+        label.grid(row=5, column=3, columnspan=2, sticky="e", padx=(0, 5), pady=10)
+        dropdown.grid(row=5, column=2, columnspan=1, sticky="w", padx=(0, 5), pady=10)
+
+    def row_6(self):
         # Row 6: Navigation buttons
 
-        next_button = ctk.CTkButton(self, font=font, text="ادامه", command=self.next_form)
-        next_button.grid(row=6, column=0, pady=12)
+        next_button = ctk.CTkButton(
+            self, font=self.font, text="ادامه", command=self.next_form
+        )
+        next_button.grid(row=6, column=0, pady=10, padx=5)
 
-        back_button = ctk.CTkButton(self, font=font, text="بازشگت", command=self.previous_form)
-        back_button.grid(row=6, column=1, pady=12)
+        back_button = ctk.CTkButton(
+            self, font=self.font, text="بازگشت", command=self.previous_form, width=80
+        )
+        back_button.grid(row=6, column=1, pady=12, padx=5)
 
 
 class Form3(Form):
@@ -335,7 +377,7 @@ class Form3(Form):
         info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
         info_lbl.grid(row=0, column=0)
 
-        back_button = ctk.CTkButton(self, text="بازشگت", command=self.previous_form)
+        back_button = ctk.CTkButton(self, text="بازگشت", command=self.previous_form)
         back_button.grid(row=1, column=1, pady=12, padx=10)
 
     def set_layout(self):
@@ -407,7 +449,7 @@ class Form5(Form):
     # Function to handle the click on the "درباره" step
     def on_about_click(self, event):
         # print(Form.current_form_num)
-        self.jump_to_form("Form5")
+        self.jump_to_form(form_to_switch="Form5")
 
     def load_widgets(self, parent):
         info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
