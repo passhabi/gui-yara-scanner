@@ -59,43 +59,61 @@ class Form(ABC, ctk.CTkFrame):
         if Form.sidebar:
             Form.sidebar.update_step(form_num)
 
-    @staticmethod
-    def get_grid_kwargs():
+    def get_grid_kwargs(self):
         return {'row': 1, 'column': 0, 'padx': 5, 'pady': 0, 'sticky': "nesw"}
 
     @staticmethod
     def jump_to_form(switch_to: str):
+        # get kwargs grid parameters of the next From:
+        grid_kwargs = Form.frames[switch_to].get_grid_kwargs()
+        
         curr = Form.curr_form_num
+        
         Form.frames["Form" + str(curr)].grid_remove()
-        Form.frames[switch_to].grid(**Form.get_grid_kwargs())
+        Form.frames[switch_to].grid(**grid_kwargs)
 
         Form.update_indexes(int(switch_to[4]))
-
+    
     @staticmethod
-    def next_form():
+    def next_form():        
         curr = Form.curr_form_num
         next = curr + 1
+        
+        curr_name = "Form" + str(curr) # "Form2"
+        next_name = "Form" + str(next)
+        
+        # get kwargs grid parameters of the next From:
+        grid_kwargs = Form.frames[next_name].get_grid_kwargs()
 
         if Form.curr_form_num:  # if it's not the fist time we show a Form (or if a Form has been grided before):
-            Form.frames["Form" + str(curr)].grid_remove()
+            Form.frames[curr_name].grid_remove()
 
-        Form.frames["Form" + str(next)].grid(**Form.get_grid_kwargs())
+        Form.frames[next_name].grid(**grid_kwargs)
 
         Form.update_indexes(next)
-
-    @staticmethod
-    def set_sidebar(sidebar: 'Sidebar'):
-        Form.sidebar = sidebar
 
     @staticmethod
     def previous_form():
         curr = Form.curr_form_num
         next = curr - 1
 
-        Form.frames["Form" + str(curr)].grid_remove()
-        Form.frames["Form" + str(next)].grid(**Form.get_grid_kwargs())
+        curr_name = "Form" + str(curr) # "Form2"
+        next_name = "Form" + str(next)
+        
+        # get kwargs grid parameters of the next From:
+        grid_kwargs = Form.frames[next_name].get_grid_kwargs()
+
+        
+        Form.frames[curr_name].grid_remove()
+        Form.frames[next_name].grid(**grid_kwargs)
 
         Form.update_indexes(next)
+
+
+    @staticmethod
+    def set_sidebar(sidebar: 'Sidebar'):
+        Form.sidebar = sidebar
+
 
     @abstractmethod
     def load_widgets(self, parent):
@@ -230,7 +248,7 @@ class Form1(Form):
         # row 2, buttons:
         btn_ready = ctk.CTkButton(self, font=parent.font, text="موافقم", command=self.next_form)
         btn_ready.grid(row=2, column=0, pady=12, padx=15, sticky="nw")
-
+        
 
 class Form2(Form):
     step_name = "تنظیمات اسکن"
@@ -239,6 +257,11 @@ class Form2(Form):
     def __init__(self, parent):
         super().__init__(parent)
 
+    
+    def get_grid_kwargs(self):
+        return {'row': 1, 'column': 0, 'padx': 0, 'pady': 0, 'sticky': "nse"}
+
+    
     def set_layout(self):
         pass
 

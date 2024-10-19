@@ -2,7 +2,7 @@ import customtkinter as ctk
 from tkinter import *
 from tkinter import ttk
 from PIL import Image
-from modules.forms import Form, Sidebar
+from forms import Form, Sidebar
 from exceptions import DependencyError
 
 
@@ -16,7 +16,7 @@ class UserInterface(ctk.CTk):
         font = 'Tahoma'
 
         self.font = ctk.CTkFont(font, size=13)
-        self.font_bold = ctk.CTkFont(font, 15, "bold")
+        self.font_bold = ctk.CTkFont(font, 14, "bold")
 
         self.window_layout(window_size)
 
