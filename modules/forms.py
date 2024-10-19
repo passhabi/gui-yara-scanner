@@ -245,11 +245,10 @@ class Form2(Form):
 
     def __init__(self, root):
         super().__init__(root)
-
-        self.padx = (0, 5)
+        
 
     def set_layout(self):
-        self.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.columnconfigure(0, weight=1)
         self.rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
     def browse_path(self):
@@ -259,22 +258,53 @@ class Form2(Form):
             self.path_entry.insert(0, path)
 
     def load_widgets(self, parent):
-        font = ("Tahoma", 12, "normal")
 
         # Row 1 , 2: Radio buttons for scanning options:
         scan_mode_var = ctk.StringVar(value="whole_system")
+        self.row_0(scan_mode_var)
+        self.row_1(scan_mode_var)
+        
+        # Row 3: Path input for specific path scan:
+        self.row_2()
 
-        # Create the radio buttons with labels in Persian and place them in the grid
-        radio1 = ctk.CTkRadioButton(
-            self,
+        # Row 4: Deep scan check button:
+        deep_scan_var = ctk.BooleanVar()
+        self.row_3(deep_scan_var)
+
+        # Row 5: Dropdown for resource allocation
+        self.row_4()
+
+        # Row 6: Navigation buttons:
+        self.row_5()
+
+    def row_0(self, scan_mode_var):
+       # Create a frame:
+        frame = ctk.CTkFrame(self,  fg_color='transparent')
+        frame.grid(row=0, column=0, sticky='wsen')
+
+        # Create the radio buttons with labels in Persian and place them using pack
+        radio = ctk.CTkRadioButton(
+            frame,
             text="",
             variable=scan_mode_var,
             value="whole_system",
-            # bg_color="blue",
             width=2,
         )
-        radio2 = ctk.CTkRadioButton(
-            self,
+
+        # Align the labels to the right (Persian design)
+        label = ctk.CTkLabel(frame, text="اسکن کل سیستم", anchor="e", font=self.font)
+
+        # Use pack instead of grid
+        radio.pack(side="right", padx=(0, 5), pady=(20, 0))
+        label.pack(side="right", padx=(0, 5), pady=(20, 0))
+
+    def row_1(self, scan_mode_var):
+        frame = ctk.CTkFrame(self,  fg_color='transparent')
+        frame.grid(row=1, column=0, sticky='wsen')
+
+        # Create the radio buttons with labels in Persian and place them in the grid
+        radio = ctk.CTkRadioButton(
+            frame,
             text="",
             variable=scan_mode_var,
             value="specific_path",
@@ -283,65 +313,51 @@ class Form2(Form):
         )
 
         # Align the labels to the right (Persian design)
-        label1 = ctk.CTkLabel(self, text="اسکن کل سیستم", anchor="e", font=self.font)
-        label2 = ctk.CTkLabel(
-            self, text="اسکن یک پوشه یا یک مسیر خاص", anchor="e", font=self.font
+        label = ctk.CTkLabel(
+            frame, text="اسکن یک پوشه یا یک مسیر خاص", anchor="e", font=self.font
         )
 
-        # Position the labels on the left and radio buttons on the right
-        radio1.grid(row=0, column=4, sticky="e", padx=(0, 5), pady=(20, 0))
-        label1.grid(row=0, column=3, sticky="e", padx=(0, 5), pady=(20, 0))
+        radio.pack(side='right', padx=(0, 5))
+        label.pack(side='right', padx=(0, 5))
 
-        radio2.grid(
-            row=1,
-            column=4,
-            sticky="e",
-            padx=(0, 5),
-        )
-        label2.grid(row=1, column=3, sticky="e", padx=(0, 5))
+    def row_2(self):
+        frame = ctk.CTkFrame(self,  fg_color='transparent')
+        frame.grid(row=2, column=0, sticky='wsen')
 
         # Row 3: Path input for specific path scan:
-        self.row_3()
+        path_label = ctk.CTkLabel(frame, text=":مسیر", anchor="e", font=self.font)
+        self.path_entry = ctk.CTkEntry(frame, width=300)
+        browse_button = ctk.CTkButton(frame, text="مرور", command=self.browse_path, width=40)
 
+        # Use pack instead of grid
+        path_label.pack(side="right", padx=(0, 30), pady=10)
+        self.path_entry.pack(side="right", padx=10, pady=10)
+        browse_button.pack(side="right", padx=10, pady=10) 
+        
+
+    def row_3(self, deep_scan_var):
+        frame = ctk.CTkFrame(self,  fg_color='transparent')
+        frame.grid(row=3, column=0, sticky='wsen')
+        
         # Row 4: Deep scan check button:
-        self.row_4()
+        checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1)
+        label = ctk.CTkLabel(frame, text="اسکن عمیق", anchor="e", font=self.font)
 
-        # Row 5: Dropdown for resource allocation
-        self.row_5()
-
-        # Row 6: Navigation buttons:
-        self.row_6()
-
-    def row_3(self):
-        # Row 3: Path input for specific path scan:
-        path_label = ctk.CTkLabel(self, text=":مسیر", anchor="e", font=self.font)
-        self.path_entry = ctk.CTkEntry(self, width=300)
-        browse_button = ctk.CTkButton(self, text="مرور", command=self.browse_path, width=20)
-
-        path_label.grid(row=3, column=4, sticky="e", padx=(0, 30), pady=10)
-        self.path_entry.grid(
-            row=3, column=1, columnspan=3, sticky="e", padx=10, pady=10
-        )
-        browse_button.grid(row=3, column=0, sticky="e", padx=10, pady=10)
+        checkbox.pack(side='right', pady=10)
+        label.pack(side='right', padx=(0, 5), pady=10)
 
     def row_4(self):
-        # Row 4: Deep scan check button:
-        deep_scan_var = ctk.BooleanVar()
-
-        checkbox = ctk.CTkCheckBox(self, text="", variable=deep_scan_var, width=1)
-        label = ctk.CTkLabel(self, text="اسکن عمیق", anchor="e", font=self.font)
-
-        checkbox.grid(row=4, column=4, sticky="e", padx=(0, 5), pady=10)
-        label.grid(row=4, column=3, sticky="e", padx=(0, 5), pady=10)
-
-    def row_5(self):
+        
+        frame = ctk.CTkFrame(self,  fg_color='transparent')
+        frame.grid(row=4, column=0, sticky='wsen')
+        
         # Row 5: Dropdown for resource allocation
         label = ctk.CTkLabel(
-            self, text=": میزان اختصاص منابع به برنامه", anchor="e", font=self.font
+            frame, text=": میزان اختصاص منابع به برنامه", anchor="e", font=self.font
         )
         resource_var = ctk.StringVar(value="متوسط")
         dropdown = ctk.CTkOptionMenu(
-            self,
+            frame,
             anchor="e",
             dropdown_font=self.font,
             font=self.font,
@@ -349,21 +365,24 @@ class Form2(Form):
             variable=resource_var,
         )
 
-        label.grid(row=5, column=3, columnspan=2, sticky="e", padx=(0, 5), pady=10)
-        dropdown.grid(row=5, column=2, columnspan=1, sticky="w", padx=(0, 5), pady=10)
+        label.pack(side='right', padx=(0, 5), pady=10)
+        dropdown.pack(side='right', padx=(0, 5), pady=10)
 
-    def row_6(self):
+    def row_5(self):
+        frame = ctk.CTkFrame(self,  fg_color='transparent')
+        frame.grid(row=5, column=0, sticky='wsen')
+        
         # Row 6: Navigation buttons
-
         next_button = ctk.CTkButton(
-            self, font=self.font, text="ادامه", command=self.next_form
+            frame, font=self.font, text="ادامه", command=self.next_form
         )
-        next_button.grid(row=6, column=0, pady=10, padx=5)
 
         back_button = ctk.CTkButton(
-            self, font=self.font, text="بازگشت", command=self.previous_form, width=80
+            frame, font=self.font, text="بازگشت", command=self.previous_form, width=80
         )
-        back_button.grid(row=6, column=1, pady=12, padx=5)
+        
+        next_button.pack(side='left', pady=10, padx=5)
+        back_button.pack(side='left', pady=12, padx=5)
 
 
 class Form3(Form):
