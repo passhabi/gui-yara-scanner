@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
-from forms import Form, Sidebar
+from forms import * # Form, Sidebar
 from exceptions import DependencyError
 
 
@@ -26,7 +26,7 @@ class UserInterface(ctk.CTk):
         Form.set_sidebar(sidebar)
         
         Form.next_form()  # show the Form1
-        Form.jump_to_form(form_to_switch='Form2')
+        Form.jump_to_form(form_to_switch='Form3')
 
     def window_layout(self, window_size, font="Tahoma"):
         """Config Window Appearance and layout.
@@ -73,3 +73,4 @@ class UserInterface(ctk.CTk):
 if __name__ == "__main__":
     ui = UserInterface()
     ui.mainloop()
+    

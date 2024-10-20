@@ -5,6 +5,7 @@ from tkinter import END, filedialog
 from abc import ABC, abstractmethod
 import typing
 import tkinter as tk
+from datetime import datetime
 
 
 class Form(ABC, ctk.CTkFrame):
@@ -245,7 +246,6 @@ class Form2(Form):
 
     def __init__(self, root):
         super().__init__(root)
-        
 
     def set_layout(self):
         self.columnconfigure(0, weight=1)
@@ -263,7 +263,7 @@ class Form2(Form):
         scan_mode_var = ctk.StringVar(value="whole_system")
         self.row_0(scan_mode_var)
         self.row_1(scan_mode_var)
-        
+
         # Row 3: Path input for specific path scan:
         self.row_2()
 
@@ -278,9 +278,9 @@ class Form2(Form):
         self.row_5()
 
     def row_0(self, scan_mode_var):
-       # Create a frame:
-        frame = ctk.CTkFrame(self,  fg_color='transparent')
-        frame.grid(row=0, column=0, sticky='wsen')
+        # Create a frame:
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=0, column=0, sticky="wsen")
 
         # Create the radio buttons with labels in Persian and place them using pack
         radio = ctk.CTkRadioButton(
@@ -299,8 +299,8 @@ class Form2(Form):
         label.pack(side="right", padx=(0, 5), pady=(20, 0))
 
     def row_1(self, scan_mode_var):
-        frame = ctk.CTkFrame(self,  fg_color='transparent')
-        frame.grid(row=1, column=0, sticky='wsen')
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=1, column=0, sticky="wsen")
 
         # Create the radio buttons with labels in Persian and place them in the grid
         radio = ctk.CTkRadioButton(
@@ -317,41 +317,47 @@ class Form2(Form):
             frame, text="اسکن یک پوشه یا یک مسیر خاص", anchor="e", font=self.font
         )
 
-        radio.pack(side='right', padx=(0, 5))
-        label.pack(side='right', padx=(0, 5))
+        radio.pack(side="right", padx=(0, 5))
+        label.pack(side="right", padx=(0, 5))
 
     def row_2(self):
-        frame = ctk.CTkFrame(self,  fg_color='transparent')
-        frame.grid(row=2, column=0, sticky='wsen')
-
         # Row 3: Path input for specific path scan:
-        path_label = ctk.CTkLabel(frame, text=":مسیر", anchor="e", font=self.font)
-        self.path_entry = ctk.CTkEntry(frame, width=300)
-        browse_button = ctk.CTkButton(frame, text="مرور", command=self.browse_path, width=40)
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=2, column=0, sticky="wsen")
+
+        path_label = ctk.CTkLabel(
+            frame, text=":مسیر", anchor="e", font=self.font, text_color="gray"
+        )
+        self.path_entry = ctk.CTkEntry(frame, width=300, state="disabled")
+        browse_button = ctk.CTkButton(
+            frame,
+            text="مرور",
+            command=self.browse_path,
+            width=40,
+            # state='disabled',
+        )
 
         # Use pack instead of grid
         path_label.pack(side="right", padx=(0, 30), pady=10)
         self.path_entry.pack(side="right", padx=10, pady=10)
-        browse_button.pack(side="right", padx=10, pady=10) 
-        
+        browse_button.pack(side="right", padx=10, pady=10)
 
     def row_3(self, deep_scan_var):
-        frame = ctk.CTkFrame(self,  fg_color='transparent')
-        frame.grid(row=3, column=0, sticky='wsen')
-        
         # Row 4: Deep scan check button:
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=3, column=0, sticky="wsen")
+
         checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1)
         label = ctk.CTkLabel(frame, text="اسکن عمیق", anchor="e", font=self.font)
 
-        checkbox.pack(side='right', pady=10)
-        label.pack(side='right', padx=(0, 5), pady=10)
+        checkbox.pack(side="right", pady=10)
+        label.pack(side="right", padx=(0, 5), pady=10)
 
     def row_4(self):
-        
-        frame = ctk.CTkFrame(self,  fg_color='transparent')
-        frame.grid(row=4, column=0, sticky='wsen')
-        
         # Row 5: Dropdown for resource allocation
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=4, column=0, sticky="wsen")
+
         label = ctk.CTkLabel(
             frame, text=": میزان اختصاص منابع به برنامه", anchor="e", font=self.font
         )
@@ -365,13 +371,200 @@ class Form2(Form):
             variable=resource_var,
         )
 
-        label.pack(side='right', padx=(0, 5), pady=10)
-        dropdown.pack(side='right', padx=(0, 5), pady=10)
+        label.pack(side="right", padx=(0, 5), pady=10)
+        dropdown.pack(side="right", padx=(0, 5), pady=10)
 
     def row_5(self):
-        frame = ctk.CTkFrame(self,  fg_color='transparent')
-        frame.grid(row=5, column=0, sticky='wsen')
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=5, column=0, sticky="wsen")
+
+        # Row 6: Navigation buttons
+        next_button = ctk.CTkButton(
+            frame, font=self.font, text="شروع اسکن", command=self.next_form
+        )
+
+        back_button = ctk.CTkButton(
+            frame, font=self.font, text="بازگشت", command=self.previous_form, width=80
+        )
+
+        next_button.pack(side="left", pady=10, padx=5)
+        back_button.pack(side="left", pady=12, padx=5)
+
+
+class Form3(Form):
+    step_name = "بررسی"
+    step_icon = "🔍"
+
+    def __init__(self, parent):
+        self.padx = 5
+        self.pady = 5
+        self.padx_staring_line = (5, 15)
+        self.padx_staring_line_ltr = (15, 5)
         
+        super().__init__(parent)
+
+    def set_layout(self):
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure((0, 1, 2, 3, 4), weight=1)
+
+    def load_widgets(self, parent):
+        # overal info + progressbar:
+        is_show_files = ctk.BooleanVar()
+        self.row_0(is_show_files)
+        
+        # progress info:
+        self.row_1()
+
+        # progress bar:
+        self.row_2()
+
+        # Row 4: Deep scan check button:
+        
+        # deep_scan_var = ctk.BooleanVar()
+        # self.row_3(deep_scan_var)
+
+        # Row 5: Dropdown for resource allocation
+        # self.row_4()
+
+        # Row 6: Navigation buttons:
+        # self.row_5()
+        
+        
+        #  # Create a frame:
+        # frame = ctk.CTkFrame(self, fg_color="transparent")
+        # frame.grid(row=0, column=0, sticky="wsen")
+
+        # checkbox = ctk.CTkCheckBox(frame, text="", variable=is_show_files, width=1, checkbox_width=20, checkbox_height=20)
+        # label = ctk.CTkLabel(frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
+
+        # checkbox.pack(side="right", pady=self.pady, padx=self.padx_staring_line)
+        # label.pack(side="right", padx=self.padx, pady=self.pady)
+        
+
+    def row_0(self, is_show_files):
+        # path info
+        frame = ctk.CTkFrame(self, 
+                            #  height=10
+                             )
+        frame.grid(row=0, column=0, sticky="wsen")
+        
+        frame.columnconfigure(0, weight=10)
+        frame.columnconfigure(1, weight=1)
+        frame.rowconfigure((0, 1, 2), weight=1)
+        
+        # defining labels:
+        label_scanning = ctk.CTkLabel(frame, text=":در حال اسکن", anchor='e', font= self.font)
+        label_status = ctk.CTkLabel(frame, text=":وضعیت", anchor='e', font= self.font)
+
+        # defining values:
+        label_scanning_value = ctk.CTkLabel(frame, text="D:/", anchor='w', font=self.font_bold)
+        label_status_value = ctk.CTkLabel(frame, text="D:/stepu/makeithappen/afile.txt", anchor='w', font= self.font)
+
+
+        # placing labels:
+        label_scanning.grid(row=0, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
+        label_status.grid(row=1, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
+        
+        # placing values:
+        label_scanning_value.grid(row=0, column=0, sticky='e', padx=self.padx)
+        label_status_value.grid(row=1, column=0, sticky='e', padx=self.padx)
+        
+        
+        # progressbar:
+        progressbar_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        progressbar_frame.grid(row=2, column=0, columnspan=2, sticky="wsen")
+        
+        progressbar = ctk.CTkProgressBar(progressbar_frame, orientation="horizontal")
+        label_precent = ctk.CTkLabel(progressbar_frame, text=f"{30}%")
+        
+        label_precent.pack(side='right', padx=(5, 20))
+        progressbar.pack(side='right', expand='True', fill='x', padx=(20, 5))
+        
+        
+
+    def row_1(self):
+        # search info:
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=1, column=0, sticky="wsen")
+
+        frame.columnconfigure((0, 2), weight=1)
+        frame.columnconfigure((1, 3), weight=1)
+        frame.rowconfigure((0, 1), weight=1)
+        
+        
+        # defining labels:
+        label_start_time = ctk.CTkLabel(frame, text=":زمان شروع", anchor='e', font= self.font)
+        label_duration = ctk.CTkLabel(frame, text=":زمان سپری شده", anchor='e', font= self.font)
+        label_num_scaned = ctk.CTkLabel(frame, text=":فایل‌های اسکن شده", anchor='e', font= self.font)
+        label_threats_found = ctk.CTkLabel(frame, text=":تهدیدهای شناسایی شده", anchor='e', font= self.font)
+
+        # defining values:
+        label_start_time_value = ctk.CTkLabel(frame, text=f"{datetime.now().strftime("%H:%M:%S")}", anchor='w', font=self.font_bold)
+        label_duration_value = ctk.CTkLabel(frame, text="00:27:13", anchor='w', font= self.font)
+        label_num_scaned_value = ctk.CTkLabel(frame, text="241", anchor='w', font= self.font)
+        label_threats_found_value = ctk.CTkLabel(frame, text="5", anchor='w', font= self.font, text_color='red')
+
+
+        # placing labels:
+        label_start_time.grid(row=0, column=3, sticky='e', padx=self.padx_staring_line, pady=self.pady)
+        label_duration.grid(row=1, column=3, sticky='e', padx=self.padx_staring_line, pady=self.pady)
+        label_num_scaned.grid(row=0, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
+        label_threats_found.grid(row=1, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
+        
+        # placing values:
+        label_start_time_value.grid(row=0, column=2, padx=self.padx)
+        label_duration_value.grid(row=1, column=2, padx=self.padx)
+        label_num_scaned_value.grid(row=0, column=0, padx=self.padx)
+        label_threats_found_value.grid(row=1, column=0, padx=self.padx)
+
+
+    def row_2(self):
+        # checkbox, Deep scan:
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=2, column=0, sticky="wsen")
+
+        progressbar = ctk.CTkProgressBar(frame, orientation="horizontal")
+        label_precent = ctk.CTkLabel(frame, text=f"{30}%")
+        
+        label_precent.pack(side='right', padx=self.padx)
+        progressbar.pack(side='right', padx=self.padx)
+
+    def row_3(self, deep_scan_var):
+        # Row 4: Deep scan check button:
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=3, column=0, sticky="wsen")
+
+        checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1)
+        label = ctk.CTkLabel(frame, text="اسکن عمیق", anchor="e", font=self.font)
+
+        checkbox.pack(side="right", pady=10)
+        label.pack(side="right", padx=(0, 5), pady=10)
+
+    def row_4(self):
+        # Row 5: Dropdown for resource allocation
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=4, column=0, sticky="wsen")
+
+        label = ctk.CTkLabel(
+            frame, text=": میزان اختصاص منابع به برنامه", anchor="e", font=self.font
+        )
+        resource_var = ctk.StringVar(value="متوسط")
+        dropdown = ctk.CTkOptionMenu(
+            frame,
+            anchor="e",
+            dropdown_font=self.font,
+            font=self.font,
+            values=["کم", "متوسط", "زیاد"],
+            variable=resource_var,
+        )
+
+        label.pack(side="right", padx=(0, 5), pady=10)
+        dropdown.pack(side="right", padx=(0, 5), pady=10)
+
+    def row_5(self):
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=5, column=0, sticky="wsen")
+
         # Row 6: Navigation buttons
         next_button = ctk.CTkButton(
             frame, font=self.font, text="ادامه", command=self.next_form
@@ -380,27 +573,9 @@ class Form2(Form):
         back_button = ctk.CTkButton(
             frame, font=self.font, text="بازگشت", command=self.previous_form, width=80
         )
-        
-        next_button.pack(side='left', pady=10, padx=5)
-        back_button.pack(side='left', pady=12, padx=5)
 
-
-class Form3(Form):
-    step_name = "بررسی"
-    step_icon = "🔍"
-
-    def __init__(self, parent):
-        super().__init__(parent)
-
-    def load_widgets(self, parent):
-        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
-        info_lbl.grid(row=0, column=0)
-
-        back_button = ctk.CTkButton(self, text="بازگشت", command=self.previous_form)
-        back_button.grid(row=1, column=1, pady=12, padx=10)
-
-    def set_layout(self):
-        pass
+        next_button.pack(side="left", pady=10, padx=5)
+        back_button.pack(side="left", pady=12, padx=5)
 
 
 class Form4(Form):
