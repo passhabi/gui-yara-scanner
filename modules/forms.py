@@ -412,15 +412,15 @@ class Form3(Form):
         is_show_files = ctk.BooleanVar()
         self.row_0(is_show_files)
         
-        # progress info:
+        # scan info:
         self.row_1()
 
-        # progress bar:
-        self.row_2()
+        # checkbox:
+        # deep_scan_var = ctk.BooleanVar()
+        # self.row_2(deep_scan_var)
 
         # Row 4: Deep scan check button:
         
-        # deep_scan_var = ctk.BooleanVar()
         # self.row_3(deep_scan_var)
 
         # Row 5: Dropdown for resource allocation
@@ -442,7 +442,7 @@ class Form3(Form):
         
 
     def row_0(self, is_show_files):
-        # path info
+        # general info
         frame = ctk.CTkFrame(self, 
                             #  height=10
                              )
@@ -477,13 +477,19 @@ class Form3(Form):
         progressbar = ctk.CTkProgressBar(progressbar_frame, orientation="horizontal")
         label_precent = ctk.CTkLabel(progressbar_frame, text=f"{30}%")
         
-        label_precent.pack(side='right', padx=(5, 20))
-        progressbar.pack(side='right', expand='True', fill='x', padx=(20, 5))
         
+        # put label and progress bar in the middle and add same padding to both side (left and right):
+        progressbar_frame.columnconfigure((1), weight=7)
+        progressbar_frame.columnconfigure((2, 3), weight=1)
+        progressbar_frame.columnconfigure(0, weight=2)
+        progressbar_frame.rowconfigure(0, weight=1)
+        
+        progressbar.grid(row=0, column=1, sticky="we", padx=self.padx)
+        label_precent.grid(row=0, column=2, sticky="w", padx=self.padx)
         
 
     def row_1(self):
-        # search info:
+        # scan info:
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=1, column=0, sticky="wsen")
 
@@ -518,27 +524,24 @@ class Form3(Form):
         label_threats_found_value.grid(row=1, column=0, padx=self.padx)
 
 
-    def row_2(self):
-        # checkbox, Deep scan:
+    def row_2(self, deep_scan_var):
+        # checkbox, Is it a deep scan?
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=2, column=0, sticky="wsen")
-
-        progressbar = ctk.CTkProgressBar(frame, orientation="horizontal")
-        label_precent = ctk.CTkLabel(frame, text=f"{30}%")
         
-        label_precent.pack(side='right', padx=self.padx)
-        progressbar.pack(side='right', padx=self.padx)
-
-    def row_3(self, deep_scan_var):
-        # Row 4: Deep scan check button:
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=3, column=0, sticky="wsen")
 
         checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1)
         label = ctk.CTkLabel(frame, text="اسکن عمیق", anchor="e", font=self.font)
 
         checkbox.pack(side="right", pady=10)
         label.pack(side="right", padx=(0, 5), pady=10)
+        
+
+    def row_3(self):
+        # Row 4: Deep scan check button:
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=3, column=0, sticky="wsen")
+
 
     def row_4(self):
         # Row 5: Dropdown for resource allocation
