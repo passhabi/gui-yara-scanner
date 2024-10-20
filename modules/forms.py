@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from widgets.ctk_widget import CTkMeter
+from ctkdlib.custom_widgets import CTkMeter
 import tkinter as tk
 from tkinter import END, filedialog
 from abc import ABC, abstractmethod
@@ -347,7 +347,7 @@ class Form2(Form):
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=3, column=0, sticky="wsen")
 
-        checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1)
+        checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1, checkbox_height=20, checkbox_width=20)
         label = ctk.CTkLabel(frame, text="اسکن عمیق", anchor="e", font=self.font)
 
         checkbox.pack(side="right", pady=10)
@@ -400,7 +400,7 @@ class Form3(Form):
         self.pady = 5
         self.padx_staring_line = (5, 15)
         self.padx_staring_line_ltr = (15, 5)
-        
+
         super().__init__(parent)
 
     def set_layout(self):
@@ -411,82 +411,78 @@ class Form3(Form):
         # overal info + progressbar:
         is_show_files = ctk.BooleanVar()
         self.row_0(is_show_files)
-        
+
         # scan info:
         self.row_1()
 
         # checkbox:
-        # deep_scan_var = ctk.BooleanVar()
-        # self.row_2(deep_scan_var)
+        deep_scan_var = ctk.BooleanVar()
+        self.row_2(deep_scan_var)
 
-        # Row 4: Deep scan check button:
-        
+        # filelist vs resoures TkMeter:
+        # self.row_3_yara_output()
+
+        self.row_3_visual_sysinfo()
+
         # self.row_3(deep_scan_var)
 
-        # Row 5: Dropdown for resource allocation
-        # self.row_4()
+        # buttons:
+        self.row_4()
 
-        # Row 6: Navigation buttons:
-        # self.row_5()
-        
-        
-        #  # Create a frame:
-        # frame = ctk.CTkFrame(self, fg_color="transparent")
-        # frame.grid(row=0, column=0, sticky="wsen")
-
-        # checkbox = ctk.CTkCheckBox(frame, text="", variable=is_show_files, width=1, checkbox_width=20, checkbox_height=20)
-        # label = ctk.CTkLabel(frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
-
-        # checkbox.pack(side="right", pady=self.pady, padx=self.padx_staring_line)
-        # label.pack(side="right", padx=self.padx, pady=self.pady)
-        
 
     def row_0(self, is_show_files):
         # general info
-        frame = ctk.CTkFrame(self, 
-                            #  height=10
-                             )
+        frame = ctk.CTkFrame(
+            self,
+            #  height=10
+        )
         frame.grid(row=0, column=0, sticky="wsen")
-        
+
         frame.columnconfigure(0, weight=10)
         frame.columnconfigure(1, weight=1)
         frame.rowconfigure((0, 1, 2), weight=1)
-        
+
         # defining labels:
-        label_scanning = ctk.CTkLabel(frame, text=":در حال اسکن", anchor='e', font= self.font)
-        label_status = ctk.CTkLabel(frame, text=":وضعیت", anchor='e', font= self.font)
+        label_scanning = ctk.CTkLabel(
+            frame, text=":در حال اسکن", anchor="e", font=self.font
+        )
+        label_status = ctk.CTkLabel(frame, text=":وضعیت", anchor="e", font=self.font)
 
         # defining values:
-        label_scanning_value = ctk.CTkLabel(frame, text="D:/", anchor='w', font=self.font_bold)
-        label_status_value = ctk.CTkLabel(frame, text="D:/stepu/makeithappen/afile.txt", anchor='w', font= self.font)
-
+        label_scanning_value = ctk.CTkLabel(
+            frame, text="D:/", anchor="w", font=self.font_bold
+        )
+        label_status_value = ctk.CTkLabel(
+            frame, text="D:/stepu/makeithappen/afile.txt", anchor="w", font=self.font
+        )
 
         # placing labels:
-        label_scanning.grid(row=0, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
-        label_status.grid(row=1, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
-        
+        label_scanning.grid(
+            row=0, column=1, sticky="e", padx=self.padx_staring_line,
+        )
+        label_status.grid(
+            row=1, column=1, sticky="e", padx=self.padx_staring_line,
+        )
+
         # placing values:
-        label_scanning_value.grid(row=0, column=0, sticky='e', padx=self.padx)
-        label_status_value.grid(row=1, column=0, sticky='e', padx=self.padx)
-        
-        
+        label_scanning_value.grid(row=0, column=0, sticky="e", padx=self.padx)
+        label_status_value.grid(row=1, column=0, sticky="e", padx=self.padx)
+
         # progressbar:
         progressbar_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        progressbar_frame.grid(row=2, column=0, columnspan=2, sticky="wsen")
-        
+        progressbar_frame.grid(row=2, column=0, columnspan=2, sticky="wsen", pady=self.pady)
+
         progressbar = ctk.CTkProgressBar(progressbar_frame, orientation="horizontal")
         label_precent = ctk.CTkLabel(progressbar_frame, text=f"{30}%")
-        
-        
+
         # put label and progress bar in the middle and add same padding to both side (left and right):
         progressbar_frame.columnconfigure((1), weight=7)
         progressbar_frame.columnconfigure((2, 3), weight=1)
         progressbar_frame.columnconfigure(0, weight=2)
         progressbar_frame.rowconfigure(0, weight=1)
-        
+
         progressbar.grid(row=0, column=1, sticky="we", padx=self.padx)
         label_precent.grid(row=0, column=2, sticky="w", padx=self.padx)
-        
 
     def row_1(self):
         # scan info:
@@ -496,89 +492,132 @@ class Form3(Form):
         frame.columnconfigure((0, 2), weight=1)
         frame.columnconfigure((1, 3), weight=1)
         frame.rowconfigure((0, 1), weight=1)
-        
-        
+
         # defining labels:
-        label_start_time = ctk.CTkLabel(frame, text=":زمان شروع", anchor='e', font= self.font)
-        label_duration = ctk.CTkLabel(frame, text=":زمان سپری شده", anchor='e', font= self.font)
-        label_num_scaned = ctk.CTkLabel(frame, text=":فایل‌های اسکن شده", anchor='e', font= self.font)
-        label_threats_found = ctk.CTkLabel(frame, text=":تهدیدهای شناسایی شده", anchor='e', font= self.font)
+        label_start_time = ctk.CTkLabel(
+            frame, text=":زمان شروع", anchor="e", font=self.font
+        )
+        label_duration = ctk.CTkLabel(
+            frame, text=":زمان سپری شده", anchor="e", font=self.font
+        )
+        label_num_scaned = ctk.CTkLabel(
+            frame, text=":فایل‌های اسکن شده", anchor="e", font=self.font
+        )
+        label_threats_found = ctk.CTkLabel(
+            frame, text=":تهدیدهای شناسایی شده", anchor="e", font=self.font
+        )
 
         # defining values:
-        label_start_time_value = ctk.CTkLabel(frame, text=f"{datetime.now().strftime("%H:%M:%S")}", anchor='w', font=self.font_bold)
-        label_duration_value = ctk.CTkLabel(frame, text="00:27:13", anchor='w', font= self.font)
-        label_num_scaned_value = ctk.CTkLabel(frame, text="241", anchor='w', font= self.font)
-        label_threats_found_value = ctk.CTkLabel(frame, text="5", anchor='w', font= self.font, text_color='red')
-
+        label_start_time_value = ctk.CTkLabel(
+            frame,
+            text=f"{datetime.now().strftime("%H:%M:%S")}",
+            anchor="w",
+            font=self.font_bold,
+        )
+        label_duration_value = ctk.CTkLabel(
+            frame, text="00:27:13", anchor="w", font=self.font
+        )
+        label_num_scaned_value = ctk.CTkLabel(
+            frame, text="241", anchor="w", font=self.font
+        )
+        label_threats_found_value = ctk.CTkLabel(
+            frame, text="5", anchor="w", font=self.font, text_color="red"
+        )
 
         # placing labels:
-        label_start_time.grid(row=0, column=3, sticky='e', padx=self.padx_staring_line, pady=self.pady)
-        label_duration.grid(row=1, column=3, sticky='e', padx=self.padx_staring_line, pady=self.pady)
-        label_num_scaned.grid(row=0, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
-        label_threats_found.grid(row=1, column=1, sticky='e', padx=self.padx_staring_line, pady=self.pady)
-        
+        label_start_time.grid(
+            row=0, column=3, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+        label_duration.grid(
+            row=1, column=3, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+        label_num_scaned.grid(
+            row=0, column=1, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+        label_threats_found.grid(
+            row=1, column=1, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+
         # placing values:
         label_start_time_value.grid(row=0, column=2, padx=self.padx)
         label_duration_value.grid(row=1, column=2, padx=self.padx)
         label_num_scaned_value.grid(row=0, column=0, padx=self.padx)
         label_threats_found_value.grid(row=1, column=0, padx=self.padx)
 
-
     def row_2(self, deep_scan_var):
         # checkbox, Is it a deep scan?
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=2, column=0, sticky="wsen")
-        
 
-        checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1)
-        label = ctk.CTkLabel(frame, text="اسکن عمیق", anchor="e", font=self.font)
+        checkbox = ctk.CTkCheckBox(
+            frame,
+            text="",
+            variable=deep_scan_var,
+            width=0,
+            checkbox_width=20,
+            checkbox_height=20,
+        )
+        label = ctk.CTkLabel(frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
 
-        checkbox.pack(side="right", pady=10)
-        label.pack(side="right", padx=(0, 5), pady=10)
-        
+        checkbox.pack(side="right", pady=10, padx=self.padx_staring_line)
+        label.pack(side="right", padx=self.padx, pady=10)
 
-    def row_3(self):
-        # Row 4: Deep scan check button:
+    def row_3_yara_output(self):
+        # textbox for yara ouput:
+        textbox_yara_output = ctk.CTkTextbox(self)
+        textbox_yara_output.grid(row=3, column=0, sticky="wsen", padx=self.padx)
+        textbox_yara_output.insert("0.0", "Some example text!\n" * 50)
+
+    def row_3_visual_sysinfo(self):
+        # cpu vs ram vs disk visual info:
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=3, column=0, sticky="wsen")
 
+        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        frame.rowconfigure((0, 1), weight=1)
+        # cpu:
+        cpu_meter = CTkMeter(frame, background='transparent', size=100, value=80,)
+        cpu_meter.grid(row=0, column=1, sticky='wesn')
+        cpu_meter.textvariable.set('80%')  # To set the text
+        
+        # ram:
+        ram_meter = CTkMeter(frame, background='transparent', size=100, value=20)
+        ram_meter.grid(row=0, column=2, sticky='nswe')
+        ram_meter.textvariable.set('20%')  # To set the text
 
+        # disk:
+        disk_meter = CTkMeter(frame, background='transparent', size=100, value=10)
+        disk_meter.grid(row=0, column=3, sticky='nswe')
+        disk_meter.textvariable.set('10%')  # To set the text
+        
+        # set labels:
+        cpu_meter_label = ctk.CTkLabel(frame, text="CPU")
+        ram_meter_label = ctk.CTkLabel(frame, text="RAM")
+        disk_meter_label = ctk.CTkLabel(frame, text="DISK")
+        
+        # place the labels:
+        cpu_meter_label.grid(row=1, column=1, sticky='wesn')
+        ram_meter_label.grid(row=1, column=2, sticky='nswe')
+        disk_meter_label.grid(row=1, column=3, sticky='nswe')
+
+        
     def row_4(self):
-        # Row 5: Dropdown for resource allocation
+        # buttons:
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=4, column=0, sticky="wsen")
-
-        label = ctk.CTkLabel(
-            frame, text=": میزان اختصاص منابع به برنامه", anchor="e", font=self.font
-        )
-        resource_var = ctk.StringVar(value="متوسط")
-        dropdown = ctk.CTkOptionMenu(
-            frame,
-            anchor="e",
-            dropdown_font=self.font,
-            font=self.font,
-            values=["کم", "متوسط", "زیاد"],
-            variable=resource_var,
-        )
-
-        label.pack(side="right", padx=(0, 5), pady=10)
-        dropdown.pack(side="right", padx=(0, 5), pady=10)
-
-    def row_5(self):
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=5, column=0, sticky="wsen")
-
-        # Row 6: Navigation buttons
-        next_button = ctk.CTkButton(
-            frame, font=self.font, text="ادامه", command=self.next_form
-        )
+        
+        next_button = ctk.CTkButton(frame, font=self.font, text="ادامه", command=self.next_form, width=50)
+        pause_button = ctk.CTkButton(frame, font=self.font, text="مکث", fg_color='orange', width=10)
 
         back_button = ctk.CTkButton(
-            frame, font=self.font, text="بازگشت", command=self.previous_form, width=80
+            frame, font=self.font, text="انصراف", command=self.previous_form,
+            fg_color='red',
+            width=10
         )
 
-        next_button.pack(side="left", pady=10, padx=5)
-        back_button.pack(side="left", pady=12, padx=5)
+        next_button.pack(side="left", padx=self.padx, pady=self.pady)
+        pause_button.pack(side="left", padx=self.padx, pady=self.pady)
+        back_button.pack(side="left", padx=self.padx, pady=self.pady)
 
 
 class Form4(Form):
