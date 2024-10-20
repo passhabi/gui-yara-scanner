@@ -409,15 +409,16 @@ class Form3(Form):
 
     def load_widgets(self, parent):
         # overal info + progressbar:
+        # checkbox:
+        deep_scan_var = ctk.BooleanVar()
         is_show_files = ctk.BooleanVar()
-        self.row_0(is_show_files)
+        self.row_0(is_show_files, deep_scan_var)
 
         # scan info:
         self.row_1()
 
-        # checkbox:
-        deep_scan_var = ctk.BooleanVar()
-        self.row_2(deep_scan_var)
+
+        # self.row_2(deep_scan_var)
 
         # filelist vs resoures TkMeter:
         # self.row_3_yara_output()
@@ -430,7 +431,7 @@ class Form3(Form):
         self.row_4()
 
 
-    def row_0(self, is_show_files):
+    def row_0(self, is_show_files, deep_scan_var):
         # general info
         frame = ctk.CTkFrame(
             self,
@@ -440,7 +441,7 @@ class Form3(Form):
 
         frame.columnconfigure(0, weight=10)
         frame.columnconfigure(1, weight=1)
-        frame.rowconfigure((0, 1, 2), weight=1)
+        frame.rowconfigure((0, 1, 2, 3), weight=1)
 
         # defining labels:
         label_scanning = ctk.CTkLabel(
@@ -483,6 +484,24 @@ class Form3(Form):
 
         progressbar.grid(row=0, column=1, sticky="we", padx=self.padx)
         label_precent.grid(row=0, column=2, sticky="w", padx=self.padx)
+        
+        # checkbox (toggle yara ouputs):
+        
+        checkbox_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        checkbox_frame.grid(row=3, column=0, columnspan=2, sticky="wsen")
+        
+        checkbox = ctk.CTkCheckBox(
+            checkbox_frame,
+            text="",
+            variable=deep_scan_var,
+            width=0,
+            checkbox_width=20,
+            checkbox_height=20,
+        )
+        label = ctk.CTkLabel(checkbox_frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
+
+        checkbox.pack(side="right", padx=self.padx_staring_line, pady=self.pady)
+        label.pack(side="right", padx=self.padx, pady=self.pady)
 
     def row_1(self):
         # scan info:
@@ -549,19 +568,6 @@ class Form3(Form):
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=2, column=0, sticky="wsen")
 
-        checkbox = ctk.CTkCheckBox(
-            frame,
-            text="",
-            variable=deep_scan_var,
-            width=0,
-            checkbox_width=20,
-            checkbox_height=20,
-        )
-        label = ctk.CTkLabel(frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
-
-        checkbox.pack(side="right", pady=10, padx=self.padx_staring_line)
-        label.pack(side="right", padx=self.padx, pady=10)
-
     def row_3_yara_output(self):
         # textbox for yara ouput:
         textbox_yara_output = ctk.CTkTextbox(self)
@@ -576,17 +582,17 @@ class Form3(Form):
         frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
         frame.rowconfigure((0, 1), weight=1)
         # cpu:
-        cpu_meter = CTkMeter(frame, background='transparent', size=100, value=80,)
+        cpu_meter = CTkMeter(frame, background='transparent', size=70, value=80,)
         cpu_meter.grid(row=0, column=1, sticky='wesn')
         cpu_meter.textvariable.set('80%')  # To set the text
         
         # ram:
-        ram_meter = CTkMeter(frame, background='transparent', size=100, value=20)
+        ram_meter = CTkMeter(frame, background='transparent', size=70, value=20)
         ram_meter.grid(row=0, column=2, sticky='nswe')
         ram_meter.textvariable.set('20%')  # To set the text
 
         # disk:
-        disk_meter = CTkMeter(frame, background='transparent', size=100, value=10)
+        disk_meter = CTkMeter(frame, background='transparent', size=70, value=10)
         disk_meter.grid(row=0, column=3, sticky='nswe')
         disk_meter.textvariable.set('10%')  # To set the text
         
@@ -606,12 +612,12 @@ class Form3(Form):
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=4, column=0, sticky="wsen")
         
-        next_button = ctk.CTkButton(frame, font=self.font, text="ادامه", command=self.next_form, width=50)
-        pause_button = ctk.CTkButton(frame, font=self.font, text="مکث", fg_color='orange', width=10)
+        next_button = ctk.CTkButton(frame, font=self.font, text="ادامه", command=self.next_form, width=90, hover_color='#36b98f')
+        pause_button = ctk.CTkButton(frame, font=self.font, text="مکث", hover_color='orange', width=10)
 
         back_button = ctk.CTkButton(
             frame, font=self.font, text="انصراف", command=self.previous_form,
-            fg_color='red',
+            hover_color='red',
             width=10
         )
 
