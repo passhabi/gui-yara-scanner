@@ -1,3 +1,4 @@
+from functools import WRAPPER_UPDATES
 import customtkinter as ctk
 from ctkdlib.custom_widgets import CTkMeter
 import tkinter as tk
@@ -6,6 +7,16 @@ from abc import ABC, abstractmethod
 import typing
 import tkinter as tk
 from datetime import datetime
+from functools import wraps
+
+def annotate_rows(row, fg_color="transparent", *args, **kwargs):
+    """
+    Args:
+        row (int): row number to place it in the Form.
+        fg_color (str, optional): fg_color tkinter color; sets for background of frame. Defaults to "transparent".
+    """
+    # this function just make sure we have correct parameter info for defining each row.
+    pass
 
 
 class Form(ABC, ctk.CTkFrame):
@@ -58,6 +69,20 @@ class Form(ABC, ctk.CTkFrame):
 
         self.set_layout()
 
+
+    def frame_decorator(func):
+        def inner_func(self, row, fg_color="transparent", *args, **kwargs):
+            if fg_color:
+                frame = ctk.CTkFrame(self, fg_color=fg_color)
+                frame.grid(row=row, column=0, sticky="wsen", pady=10)
+            else:
+                frame = ctk.CTkFrame(self, corner_radius=0)
+                frame.grid(row=row, column=0, sticky="wsen")
+
+            return func(self, frame, *args, **kwargs)
+
+        return inner_func
+    
     @staticmethod
     def update_indexes(form_num: int):
         # update the current form number:
@@ -347,7 +372,14 @@ class Form2(Form):
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=3, column=0, sticky="wsen")
 
-        checkbox = ctk.CTkCheckBox(frame, text="", variable=deep_scan_var, width=1, checkbox_height=20, checkbox_width=20)
+        checkbox = ctk.CTkCheckBox(
+            frame,
+            text="",
+            variable=deep_scan_var,
+            width=1,
+            checkbox_height=20,
+            checkbox_width=20,
+        )
         label = ctk.CTkLabel(frame, text="اسکن عمیق", anchor="e", font=self.font)
 
         checkbox.pack(side="right", pady=10)
@@ -408,40 +440,19 @@ class Form3(Form):
         self.rowconfigure((0, 1, 2, 3, 4), weight=1)
 
     def load_widgets(self, parent):
-        # overal info + progressbar:
-        # checkbox:
-        deep_scan_var = ctk.BooleanVar()
-        is_show_files = ctk.BooleanVar()
-        self.row_0(is_show_files, deep_scan_var)
+        self.row_overalinfo(0, None)
+        self.row_checkbox(1, None, ctk.BooleanVar())
+        self.row_progressbar(2)
+        self.row_scan_info(3)
+        self.row_visual_sysinfo(4)
+        self.row_nav_buttons(5)
 
-        # scan info:
-        self.row_1()
-
-
-        # self.row_2(deep_scan_var)
-
-        # filelist vs resoures TkMeter:
-        # self.row_3_yara_output()
-
-        self.row_3_visual_sysinfo()
-
-        # self.row_3(deep_scan_var)
-
-        # buttons:
-        self.row_4()
-
-
-    def row_0(self, is_show_files, deep_scan_var):
-        # general info
-        frame = ctk.CTkFrame(
-            self,
-            #  height=10
-        )
-        frame.grid(row=0, column=0, sticky="wsen")
-
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_overalinfo(self, frame):
         frame.columnconfigure(0, weight=10)
         frame.columnconfigure(1, weight=1)
-        frame.rowconfigure((0, 1, 2, 3), weight=1)
+        frame.rowconfigure((0, 1), weight=1)
 
         # defining labels:
         label_scanning = ctk.CTkLabel(
@@ -459,55 +470,56 @@ class Form3(Form):
 
         # placing labels:
         label_scanning.grid(
-            row=0, column=1, sticky="e", padx=self.padx_staring_line,
+            row=0,
+            column=1,
+            sticky="e",
+            padx=self.padx_staring_line,
         )
         label_status.grid(
-            row=1, column=1, sticky="e", padx=self.padx_staring_line,
+            row=1,
+            column=1,
+            sticky="e",
+            padx=self.padx_staring_line,
         )
 
         # placing values:
         label_scanning_value.grid(row=0, column=0, sticky="e", padx=self.padx)
         label_status_value.grid(row=1, column=0, sticky="e", padx=self.padx)
 
-        # progressbar:
-        progressbar_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        progressbar_frame.grid(row=2, column=0, columnspan=2, sticky="wsen", pady=self.pady)
-
-        progressbar = ctk.CTkProgressBar(progressbar_frame, orientation="horizontal")
-        label_precent = ctk.CTkLabel(progressbar_frame, text=f"{30}%")
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_progressbar(self, frame):
+        progressbar = ctk.CTkProgressBar(frame, orientation="horizontal")
+        label_precent = ctk.CTkLabel(frame, text=f"{30}%")
 
         # put label and progress bar in the middle and add same padding to both side (left and right):
-        progressbar_frame.columnconfigure((1), weight=7)
-        progressbar_frame.columnconfigure((2, 3), weight=1)
-        progressbar_frame.columnconfigure(0, weight=2)
-        progressbar_frame.rowconfigure(0, weight=1)
+        frame.columnconfigure((1), weight=7)
+        frame.columnconfigure((2, 3), weight=1)
+        frame.columnconfigure(0, weight=2)
+        frame.rowconfigure(0, weight=1)
 
         progressbar.grid(row=0, column=1, sticky="we", padx=self.padx)
         label_precent.grid(row=0, column=2, sticky="w", padx=self.padx)
-        
-        # checkbox (toggle yara ouputs):
-        
-        checkbox_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        checkbox_frame.grid(row=3, column=0, columnspan=2, sticky="wsen")
-        
+
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_checkbox(self, frame, is_show_file=None):
         checkbox = ctk.CTkCheckBox(
-            checkbox_frame,
+            frame,
             text="",
-            variable=deep_scan_var,
+            variable=is_show_file,
             width=0,
             checkbox_width=20,
             checkbox_height=20,
         )
-        label = ctk.CTkLabel(checkbox_frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
+        label = ctk.CTkLabel(frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
 
         checkbox.pack(side="right", padx=self.padx_staring_line, pady=self.pady)
         label.pack(side="right", padx=self.padx, pady=self.pady)
 
-    def row_1(self):
-        # scan info:
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=1, column=0, sticky="wsen")
-
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_scan_info(self, frame):
         frame.columnconfigure((0, 2), weight=1)
         frame.columnconfigure((1, 3), weight=1)
         frame.rowconfigure((0, 1), weight=1)
@@ -563,62 +575,80 @@ class Form3(Form):
         label_num_scaned_value.grid(row=0, column=0, padx=self.padx)
         label_threats_found_value.grid(row=1, column=0, padx=self.padx)
 
-    def row_2(self, deep_scan_var):
-        # checkbox, Is it a deep scan?
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=2, column=0, sticky="wsen")
-
-    def row_3_yara_output(self):
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_yara_output(self, frame):
         # textbox for yara ouput:
-        textbox_yara_output = ctk.CTkTextbox(self)
+        textbox_yara_output = ctk.CTkTextbox(frame)
         textbox_yara_output.grid(row=3, column=0, sticky="wsen", padx=self.padx)
         textbox_yara_output.insert("0.0", "Some example text!\n" * 50)
 
-    def row_3_visual_sysinfo(self):
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_visual_sysinfo(self, frame):
         # cpu vs ram vs disk visual info:
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=3, column=0, sticky="wsen")
-
         frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
         frame.rowconfigure((0, 1), weight=1)
         # cpu:
-        cpu_meter = CTkMeter(frame, background='transparent', size=70, value=80,)
-        cpu_meter.grid(row=0, column=1, sticky='wesn')
-        cpu_meter.textvariable.set('80%')  # To set the text
-        
+        cpu_meter = CTkMeter(
+            frame,
+            background="transparent",
+            size=70,
+            value=80,
+        )
+        cpu_meter.grid(row=0, column=1, sticky="wesn")
+        cpu_meter.textvariable.set("80%")  # To set the text
+
         # ram:
-        ram_meter = CTkMeter(frame, background='transparent', size=70, value=20)
-        ram_meter.grid(row=0, column=2, sticky='nswe')
-        ram_meter.textvariable.set('20%')  # To set the text
+        ram_meter = CTkMeter(frame, background="transparent", size=70, value=20)
+        ram_meter.grid(row=0, column=2, sticky="nswe")
+        ram_meter.textvariable.set("20%")  # To set the text
 
         # disk:
-        disk_meter = CTkMeter(frame, background='transparent', size=70, value=10)
-        disk_meter.grid(row=0, column=3, sticky='nswe')
-        disk_meter.textvariable.set('10%')  # To set the text
-        
+        disk_meter = CTkMeter(frame, background="transparent", size=70, value=10)
+        disk_meter.grid(row=0, column=3, sticky="nswe")
+        disk_meter.textvariable.set("10%")  # To set the text
+
         # set labels:
         cpu_meter_label = ctk.CTkLabel(frame, text="CPU")
         ram_meter_label = ctk.CTkLabel(frame, text="RAM")
         disk_meter_label = ctk.CTkLabel(frame, text="DISK")
-        
+
         # place the labels:
-        cpu_meter_label.grid(row=1, column=1, sticky='wesn')
-        ram_meter_label.grid(row=1, column=2, sticky='nswe')
-        disk_meter_label.grid(row=1, column=3, sticky='nswe')
+        cpu_meter_label.grid(row=1, column=1, sticky="wesn")
+        ram_meter_label.grid(row=1, column=2, sticky="nswe")
+        disk_meter_label.grid(row=1, column=3, sticky="nswe")
 
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_nav_buttons(self, frame):
+        buttons_height = 35
         
-    def row_4(self):
-        # buttons:
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=4, column=0, sticky="wsen")
-        
-        next_button = ctk.CTkButton(frame, font=self.font, text="ادامه", command=self.next_form, width=90, hover_color='#36b98f')
-        pause_button = ctk.CTkButton(frame, font=self.font, text="مکث", hover_color='orange', width=10)
-
+        next_button = ctk.CTkButton(
+            frame,
+            font=self.font,
+            text="ادامه",
+            command=self.next_form,
+            width=90,
+            height=buttons_height,
+            hover_color="#36b98f",
+        )
+        pause_button = ctk.CTkButton(
+            frame,
+            font=self.font,
+            text="مکث",
+            hover_color="orange",
+            width=10,
+            height=buttons_height,
+        )
         back_button = ctk.CTkButton(
-            frame, font=self.font, text="انصراف", command=self.previous_form,
-            hover_color='red',
-            width=10
+            frame,
+            font=self.font,
+            text="انصراف",
+            command=self.previous_form,
+            hover_color="red",
+            width=10,
+            height=buttons_height,
         )
 
         next_button.pack(side="left", padx=self.padx, pady=self.pady)
