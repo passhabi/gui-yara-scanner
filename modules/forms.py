@@ -9,6 +9,7 @@ import tkinter as tk
 from datetime import datetime
 from functools import wraps
 
+
 def annotate_rows(row, fg_color="transparent", *args, **kwargs):
     """
     Args:
@@ -69,7 +70,6 @@ class Form(ABC, ctk.CTkFrame):
 
         self.set_layout()
 
-
     def frame_decorator(func):
         def inner_func(self, row, fg_color="transparent", *args, **kwargs):
             if fg_color:
@@ -82,7 +82,7 @@ class Form(ABC, ctk.CTkFrame):
             return func(self, frame, *args, **kwargs)
 
         return inner_func
-    
+
     @staticmethod
     def update_indexes(form_num: int):
         # update the current form number:
@@ -143,7 +143,7 @@ class Form(ABC, ctk.CTkFrame):
         pass
 
     @abstractmethod
-    def set_layout(self):
+    def set_layout(self: ctk.CTkFrame):
         pass
 
     def generate_tk_wgt_for_sidebar(
@@ -166,6 +166,12 @@ class Form(ABC, ctk.CTkFrame):
 
         raise ValueError("sidebar_widget hasn't been set.")
 
+    # other methods:
+    def browse_path(self):
+        path = filedialog.askdirectory()
+        if path:
+            self.path_entry.delete(0, ctk.END)
+            self.path_entry.insert(0, path)
 
 class Sidebar(ctk.CTkFrame):
     def __init__(self, root_window: ctk.CTk, frames: typing.Dict[str, ctk.CTkFrame]):
@@ -274,13 +280,7 @@ class Form2(Form):
 
     def set_layout(self):
         self.columnconfigure(0, weight=1)
-        self.rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
-
-    def browse_path(self):
-        path = filedialog.askdirectory()
-        if path:
-            self.path_entry.delete(0, ctk.END)
-            self.path_entry.insert(0, path)
+        self.rowconfigure(list(range(5)), weight=1)
 
     def load_widgets(self, parent):
 
@@ -437,14 +437,15 @@ class Form3(Form):
 
     def set_layout(self):
         self.columnconfigure(0, weight=1)
-        self.rowconfigure((0, 1, 2, 3, 4), weight=1)
+        self.rowconfigure(list(range(5)), weight=1)
 
     def load_widgets(self, parent):
         self.row_overalinfo(0, None)
         self.row_checkbox(1, None, ctk.BooleanVar())
         self.row_progressbar(2)
-        self.row_scan_info(3)
-        self.row_visual_sysinfo(4)
+        # self.row_visual_sysinfo(4)
+        # self.row_scan_info(3)
+        self.row_yara_output(4)
         self.row_nav_buttons(5)
 
     @wraps(annotate_rows)
@@ -514,8 +515,8 @@ class Form3(Form):
         )
         label = ctk.CTkLabel(frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
 
-        checkbox.pack(side="right", padx=self.padx_staring_line, pady=self.pady)
-        label.pack(side="right", padx=self.padx, pady=self.pady)
+        label.pack(side="left", padx=self.padx_staring_line_ltr, pady=self.pady)
+        checkbox.pack(side="left", padx=self.padx_staring_line, pady=self.pady)
 
     @wraps(annotate_rows)
     @Form.frame_decorator
@@ -580,7 +581,7 @@ class Form3(Form):
     def row_yara_output(self, frame):
         # textbox for yara ouput:
         textbox_yara_output = ctk.CTkTextbox(frame)
-        textbox_yara_output.grid(row=3, column=0, sticky="wsen", padx=self.padx)
+        textbox_yara_output.pack(padx=self.padx, fill='both', expand=True)
         textbox_yara_output.insert("0.0", "Some example text!\n" * 50)
 
     @wraps(annotate_rows)
@@ -622,15 +623,15 @@ class Form3(Form):
     @wraps(annotate_rows)
     @Form.frame_decorator
     def row_nav_buttons(self, frame):
-        buttons_height = 35
-        
+        # buttons_height = 35
+
         next_button = ctk.CTkButton(
             frame,
             font=self.font,
             text="ادامه",
             command=self.next_form,
             width=90,
-            height=buttons_height,
+            # height=buttons_height,
             hover_color="#36b98f",
         )
         pause_button = ctk.CTkButton(
@@ -639,7 +640,7 @@ class Form3(Form):
             text="مکث",
             hover_color="orange",
             width=10,
-            height=buttons_height,
+            # height=buttons_height,
         )
         back_button = ctk.CTkButton(
             frame,
@@ -648,7 +649,7 @@ class Form3(Form):
             command=self.previous_form,
             hover_color="red",
             width=10,
-            height=buttons_height,
+            # height=buttons_height,
         )
 
         next_button.pack(side="left", padx=self.padx, pady=self.pady)
@@ -661,14 +662,157 @@ class Form4(Form):
     step_icon = "📊"
 
     def __init__(self, parent):
+        self.padx = 5
+        self.pady = 5
+        self.padx_staring_line = (5, 15)
+        self.padx_staring_line_ltr = (15, 5)
         super().__init__(parent)
 
-    def load_widgets(self, parent):
-        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
-        info_lbl.grid(row=0, column=0)
-
     def set_layout(self):
-        pass
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(list(range(3)), weight=1)
+
+    def load_widgets(self, parent):
+        self.row_result_summary(0, None)
+        self.row_list_of_files(1)
+        self.row_save_outputs(2)
+        self.row_nav_buttons(3)
+
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_result_summary(self, frame):
+
+        frame.columnconfigure((0, 2), weight=1)
+        frame.columnconfigure((1, 3), weight=1)
+        frame.rowconfigure((0, 1), weight=1)
+
+        # defining labels:
+        label_start_time = ctk.CTkLabel(
+            frame, text=":زمان شروع", anchor="e", font=self.font
+        )
+        label_duration = ctk.CTkLabel(
+            frame, text=":زمان سپری شده", anchor="e", font=self.font
+        )
+        label_num_scaned = ctk.CTkLabel(
+            frame, text=":فایل‌های اسکن شده", anchor="e", font=self.font
+        )
+        label_threats_found = ctk.CTkLabel(
+            frame, text=":تهدیدهای شناسایی شده", anchor="e", font=self.font
+        )
+
+        # defining values:
+        label_start_time_value = ctk.CTkLabel(
+            frame,
+            text=f"{datetime.now().strftime("%H:%M:%S")}",
+            anchor="w",
+            font=self.font_bold,
+        )
+        label_duration_value = ctk.CTkLabel(
+            frame, text="00:27:13", anchor="w", font=self.font
+        )
+        label_num_scaned_value = ctk.CTkLabel(
+            frame, text="241", anchor="w", font=self.font
+        )
+        label_threats_found_value = ctk.CTkLabel(
+            frame, text="5", anchor="w", font=self.font, text_color="red"
+        )
+
+        # placing labels:
+        label_start_time.grid(
+            row=0, column=3, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+        label_duration.grid(
+            row=1, column=3, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+        label_num_scaned.grid(
+            row=0, column=1, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+        label_threats_found.grid(
+            row=1, column=1, sticky="e", padx=self.padx_staring_line, pady=self.pady
+        )
+
+        # placing values:
+        label_start_time_value.grid(row=0, column=2, padx=self.padx)
+        label_duration_value.grid(row=1, column=2, padx=self.padx)
+        label_num_scaned_value.grid(row=0, column=0, padx=self.padx)
+        label_threats_found_value.grid(row=1, column=0, padx=self.padx)
+
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_list_of_files(self, frame):
+        # textbox for yara ouput:
+        text_box = ctk.CTkTextbox(frame)
+        text_box.pack(padx=self.padx, expand=True, fill='both')
+        text_box.insert("0.0", "/sys/genuine_above_despite.pkg\n/sbin/but_victim.war\n/usr/libexec/next_irritably.abw" * 10)
+    
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_save_outputs(self, frame:ctk.CTkFrame):
+        root_frame = frame
+        root_frame.rowconfigure((0, 1), weight=1)
+        root_frame.columnconfigure(0, weight=1)
+        
+        # label decription:
+        frame_row_0 = ctk.CTkFrame(root_frame, bg_color="transparent")
+        frame_row_0.grid(row=0, column=0, sticky='ewsn', padx=self.padx, pady=self.pady)
+        
+        description_label = ctk.CTkLabel(
+        frame_row_0, text=":یک مسیر برای ذخیره تهدیدهای شناسایی شده تعیین کنید", anchor="e", font=self.font)
+        description_label.pack(side='right', padx=self.padx_staring_line, pady=self.pady)
+
+
+        # label مسیر:
+        frame_row_1 = ctk.CTkFrame(root_frame, bg_color="transparent")
+        frame_row_1.grid(row=1, column=0, sticky='snwe', padx=self.padx, pady=self.pady)
+        frame_row_1.rowconfigure(0, weight=1)
+        frame_row_1.columnconfigure(0, weight=1)
+        frame_row_1.columnconfigure(1, weight=8)
+        frame_row_1.columnconfigure(2, weight=1)
+        
+        path_label = ctk.CTkLabel(
+        frame_row_1, text=":مسیر", anchor="e", font=self.font)
+        path_label.grid(row=0, column=2, sticky='w', padx=self.padx_staring_line, pady=self.pady)
+
+        #   path textbox:
+        self.path_entry = ctk.CTkEntry(frame_row_1)
+        self.path_entry.grid(row=0, column=1, sticky='we', padx=self.padx, pady=self.pady)
+        
+        #   browse button:
+        browse_button = ctk.CTkButton(
+            frame_row_1,
+            text="مرور",
+            command=self.browse_path,
+            width=40,
+            )
+        browse_button.grid(row=0, column=0, sticky='e', padx=self.padx, pady=self.pady)
+        
+    
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_nav_buttons(self, frame):
+        buttons_height = 30
+
+        next_button = ctk.CTkButton(
+            frame,
+            font=self.font,
+            text="بستن",
+            command=exit,
+            width=90,
+            height=buttons_height,
+            hover_color="red",
+        )
+        next_button.pack(side="left", padx=self.padx, pady=self.pady)
+        
+        save_button = ctk.CTkButton(
+            frame,
+            font=self.font,
+            text="ذخیره",
+            command=self.previous_form,
+            width=90,
+            height=buttons_height,
+            fg_color="green",
+        )
+        save_button.pack(side="left", padx=self.padx, pady=self.pady)
 
 
 class Form5(Form):
@@ -676,6 +820,11 @@ class Form5(Form):
     step_icon = "ℹ "
 
     def __init__(self, parent):
+        self.padx = 5
+        self.pady = 5
+        self.padx_staring_line = (5, 15)
+        self.padx_staring_line_ltr = (15, 5)
+        
         super().__init__(parent)
 
     def generate_tk_wgt_for_sidebar(self, sidebar: ctk.CTkFrame):
@@ -723,9 +872,30 @@ class Form5(Form):
         # print(Form.current_form_num)
         self.jump_to_form(form_to_switch="Form5")
 
-    def load_widgets(self, parent):
-        info_lbl = ctk.CTkLabel(self, text=f"{self.__class__.__name__}")
-        info_lbl.grid(row=0, column=0)
-
     def set_layout(self):
-        pass
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+    
+    def load_widgets(self, parent):
+        self.row_address(0)
+        
+    @Form.frame_decorator
+    def row_address(self, frame):
+        info_lbl_line1 = ctk.CTkLabel(frame,
+                                text="نوآوران فناور هوراد",
+                                anchor='e',
+                                font=self.font,
+                                )
+        info_lbl_line2 = ctk.CTkLabel(frame,
+                                text=":آدرس",
+                                anchor='e',
+                                font=self.font,
+                                )
+        info_lbl_line3 = ctk.CTkLabel(frame,
+                                text="فناوری پردیس، مرکز رشد نخبگان، طبقه دوم، واحد 1205",
+                                anchor='e',
+                                font=self.font,
+                                )
+        info_lbl_line1.pack(fill='x', padx=self.padx_staring_line)
+        info_lbl_line2.pack(fill='x', padx=self.padx_staring_line)
+        info_lbl_line3.pack(fill='x', padx=self.padx_staring_line)

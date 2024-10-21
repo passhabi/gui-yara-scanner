@@ -26,7 +26,7 @@ class UserInterface(ctk.CTk):
         Form.set_sidebar(sidebar)
         
         Form.next_form()  # show the Form1
-        Form.jump_to_form(form_to_switch='Form3')
+        Form.jump_to_form(form_to_switch='Form4')
 
     def window_layout(self, window_size, font="Tahoma"):
         """Config Window Appearance and layout.
