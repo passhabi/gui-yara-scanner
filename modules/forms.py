@@ -276,6 +276,11 @@ class Form2(Form):
     step_icon = "⚙️"
 
     def __init__(self, root):
+        self.padx = 5
+        self.pady = 5
+        self.padx_staring_line = (5, 15)
+        self.padx_staring_line_ltr = (15, 5)
+        
         super().__init__(root)
 
     def set_layout(self):
@@ -286,11 +291,9 @@ class Form2(Form):
 
         # Row 1 , 2: Radio buttons for scanning options:
         scan_mode_var = ctk.StringVar(value="whole_system")
-        self.row_0(scan_mode_var)
-        self.row_1(scan_mode_var)
-
-        # Row 3: Path input for specific path scan:
-        self.row_2()
+        self.row_radio_whole_system(scan_mode_var)
+        
+        self.row_radio_specific_path(1, scan_mode_var=scan_mode_var)
 
         # Row 4: Deep scan check button:
         deep_scan_var = ctk.BooleanVar()
@@ -302,7 +305,7 @@ class Form2(Form):
         # Row 6: Navigation buttons:
         self.row_5()
 
-    def row_0(self, scan_mode_var):
+    def row_radio_whole_system(self, scan_mode_var):
         # Create a frame:
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=0, column=0, sticky="wsen")
@@ -323,49 +326,56 @@ class Form2(Form):
         radio.pack(side="right", padx=(0, 5), pady=(20, 0))
         label.pack(side="right", padx=(0, 5), pady=(20, 0))
 
-    def row_1(self, scan_mode_var):
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=1, column=0, sticky="wsen")
-
-        # Create the radio buttons with labels in Persian and place them in the grid
+    @wraps(annotate_rows)
+    @Form.frame_decorator
+    def row_radio_specific_path(self, frame, scan_mode_var):
+        
+        frame.columnconfigure(0, weight=1)
+        frame.rowconfigure((0, 1), weight=1)
+        
+        # Create the radio buttons with labels:
+        row_01_frame = ctk.CTkFrame(frame, bg_color='transparent')
+        row_01_frame.grid(row=0, column=0, sticky='swen', padx=self.padx_staring_line, pady=(0, self.pady))
+        
         radio = ctk.CTkRadioButton(
-            frame,
+            row_01_frame,
             text="",
             variable=scan_mode_var,
             value="specific_path",
-            # bg_color="blue",
             width=2,
         )
-
-        # Align the labels to the right (Persian design)
+        radio.pack(side="right")
+        
         label = ctk.CTkLabel(
-            frame, text="اسکن یک پوشه یا یک مسیر خاص", anchor="e", font=self.font
+            row_01_frame, text="اسکن یک پوشه یا یک مسیر خاص", anchor="e", font=self.font
         )
-
-        radio.pack(side="right", padx=(0, 5))
-        label.pack(side="right", padx=(0, 5))
-
-    def row_2(self):
-        # Row 3: Path input for specific path scan:
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=2, column=0, sticky="wsen")
-
+        label.pack(side="right", padx=self.padx)
+        
+                # label مسیر:
+        row_02_frame = ctk.CTkFrame(frame, bg_color="transparent")
+        row_02_frame.grid(row=1, column=0, sticky='snwe', padx=self.padx_staring_line, pady=(0, self.pady))
+        row_02_frame.rowconfigure(0, weight=1)
+        row_02_frame.columnconfigure(0, weight=1)
+        row_02_frame.columnconfigure(1, weight=8)
+        row_02_frame.columnconfigure(2, weight=1)
+        
         path_label = ctk.CTkLabel(
-            frame, text=":مسیر", anchor="e", font=self.font, text_color="gray"
-        )
-        self.path_entry = ctk.CTkEntry(frame, width=300, state="disabled")
+        row_02_frame, text=":مسیر", anchor="e", font=self.font, text_color='grey')
+        path_label.grid(row=0, column=2, sticky='w', padx=self.padx, pady=self.pady)
+
+        #   path textbox:
+        self.path_entry = ctk.CTkEntry(row_02_frame, state='disabled')
+        self.path_entry.grid(row=0, column=1, sticky='we', padx=self.padx, pady=self.pady)
+        
+        #   browse button:
         browse_button = ctk.CTkButton(
-            frame,
+            row_02_frame,
             text="مرور",
             command=self.browse_path,
             width=40,
-            # state='disabled',
-        )
-
-        # Use pack instead of grid
-        path_label.pack(side="right", padx=(0, 30), pady=10)
-        self.path_entry.pack(side="right", padx=10, pady=10)
-        browse_button.pack(side="right", padx=10, pady=10)
+            )
+        browse_button.grid(row=0, column=0, sticky='e', padx=self.padx, pady=self.pady)
+        
 
     def row_3(self, deep_scan_var):
         # Row 4: Deep scan check button:
@@ -443,9 +453,11 @@ class Form3(Form):
         self.row_overalinfo(0, None)
         self.row_checkbox(1, None, ctk.BooleanVar())
         self.row_progressbar(2)
-        # self.row_visual_sysinfo(4)
-        # self.row_scan_info(3)
-        self.row_yara_output(4)
+        # should replace the following two rows to have enough space for row_yara_output!: 
+        self.row_scan_info(3)
+        self.row_visual_sysinfo(4)
+        
+        # self.row_yara_output(4)
         self.row_nav_buttons(5)
 
     @wraps(annotate_rows)
