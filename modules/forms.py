@@ -71,44 +71,19 @@ class Form(ABC, ctk.CTkFrame):
         pass
 
     def frame_decorator(func):
-        
-        # check if the function that uses the frame_decorator has arg named 'frame':
+        # before function call: check if the function that uses the frame_decorator has an arg named 'frame':
         sig = inspect.signature(func)
         if 'frame' not in sig.parameters:
             raise ValueError(f"The function {func.__name__} must have an argument named 'frame'.")
-    
-        
-        def inner_func(self, row: int, fg_color: str = "transparent", *args, **kwargs):
-            try:
-                if fg_color:
-                    frame = ctk.CTkFrame(self, fg_color=fg_color)
-                    frame.grid(row=row, column=0, sticky="wsen", pady=10)
-                else:
-                    frame = ctk.CTkFrame(self, corner_radius=0)
-                    frame.grid(row=row, column=0, sticky="wsen")
-                return func(self, frame, *args, **kwargs)
-                
-            except ValueError and tk.TclError  as e:
-                # takes all inner_func parameters instead of 'self', 'args' and 'kwargs':
-                inner_func_signature = list(inspect.signature(inner_func).parameters)[1:-2]
-                # takes all func parameters except 'self' and 'frame':
-                func_signature = list(inspect.signature(func).parameters)[2:]
-                
-                # making sure we dont lost track of errors with our decorator:
-                #   tangle the inner_func_signature and func_signature together to make an overall custom message:
-                custom_msg = f"The {func.__name__} function"
-                if inner_func_signature: # add positional arguments to the message:
-                    custom_msg += f" it takes {len(inner_func_signature)} positional arguments: " + ", ".join(inner_func_signature)
-                    
-                if inner_func_signature and func_signature: # add and &
-                    custom_msg += " and"
-                    
-                if func_signature: # add keywords arguments to message:
-                    custom_msg += f" it takes {len(func_signature)} keywords arguments: " + " , ".join(func_signature)
-                    
-                    
-                # Add your custom message using to inner_func_signature and func_signature and add that to the original error message:
-                raise ValueError(f"{custom_msg}\n{str(e)}")
+
+        def inner_func(self, row: int, fg_color: str = "transparent", *args, **kwargs):      
+            if fg_color:
+                frame = ctk.CTkFrame(self, fg_color=fg_color)
+                frame.grid(row=row, column=0, sticky="wsen", pady=10, padx=(10, 10))
+            else:
+                frame = ctk.CTkFrame(self, corner_radius=0)
+                frame.grid(row=row, column=0, sticky="wsen")
+            return func(self, frame, *args, **kwargs)
 
         return inner_func
 
@@ -315,30 +290,22 @@ class Form2(Form):
 
     def set_layout(self):
         self.columnconfigure(0, weight=1)
-        self.rowconfigure(list(range(5)), weight=1)
+        self.rowconfigure(list(range(4)), weight=1)
 
     def load_widgets(self, parent):
 
-        # Row 1 , 2: Radio buttons for scanning options:
         scan_mode_var = ctk.StringVar(value="whole_system")
         self.row_radio_whole_system(0, scan_mode_var=scan_mode_var)
+        self.row_radio_specific_path(1)
 
-        self.row_radio_specific_path(1, scan_mode_var=scan_mode_var)
-
-        # Row 4: Deep scan check button:
-        deep_scan_var = ctk.BooleanVar()
-        self.row_3(deep_scan_var)
-
-        # Row 5: Dropdown for resource allocation
-        self.row_4()
-
-        # Row 6: Navigation buttons:
-        self.row_5()
+        self.row_checkbox_deep_scan(2, deep_scan_var=ctk.BooleanVar())
+        self.row_dropdown_resource_lvl(3)
+        self.row_nav_buttons(4)
 
     @wraps(Form.annotate_rows)
     @Form.frame_decorator
     def row_radio_whole_system(self, frame, scan_mode_var):
-        # Create the radio buttons with labels in Persian and place them using pack
+        # Create the radio buttons with labels and place them using pack:
         radio = ctk.CTkRadioButton(
             frame,
             text="",
@@ -348,11 +315,11 @@ class Form2(Form):
         )
 
         # Align the labels to the right (Persian design)
-        label = ctk.CTkLabel(frame, text="اسکن کل سیستم", anchor="e", font=self.font) #bug:!!!!!!
+        label = ctk.CTkLabel(frame, text="اسکن کل سیستم", anchor="e", font=self.font)
 
         # Use pack instead of grid
-        radio.pack(side="right", padx=(0, 5), pady=(20, 0))
-        label.pack(side="right", padx=(0, 5), pady=(20, 0))
+        radio.pack(side="right", padx=(5, 0), pady=(20, 0))
+        label.pack(side="right", padx=self.padx, pady=(20, 0))
 
     @wraps(Form.annotate_rows)
     @Form.frame_decorator
@@ -367,7 +334,6 @@ class Form2(Form):
             row=0,
             column=0,
             sticky="swen",
-            padx=self.padx_staring_line,
             pady=(0, self.pady),
         )
 
@@ -419,11 +385,9 @@ class Form2(Form):
         )
         browse_button.grid(row=0, column=0, sticky="e", padx=self.padx, pady=self.pady)
 
-    def row_3(self, deep_scan_var):
-        # Row 4: Deep scan check button:
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=3, column=0, sticky="wsen")
-
+    @wraps(Form.annotate_rows)
+    @Form.frame_decorator
+    def row_checkbox_deep_scan(self, frame, deep_scan_var):
         checkbox = ctk.CTkCheckBox(
             frame,
             text="",
@@ -436,12 +400,10 @@ class Form2(Form):
 
         checkbox.pack(side="right", pady=10)
         label.pack(side="right", padx=(0, 5), pady=10)
-
-    def row_4(self):
-        # Row 5: Dropdown for resource allocation
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=4, column=0, sticky="wsen")
-
+    
+    @wraps(Form.annotate_rows)
+    @Form.frame_decorator
+    def row_dropdown_resource_lvl(self, frame):
         label = ctk.CTkLabel(
             frame, text=": میزان اختصاص منابع به برنامه", anchor="e", font=self.font
         )
@@ -458,10 +420,9 @@ class Form2(Form):
         label.pack(side="right", padx=(0, 5), pady=10)
         dropdown.pack(side="right", padx=(0, 5), pady=10)
 
-    def row_5(self):
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=5, column=0, sticky="wsen")
-
+    @wraps(Form.annotate_rows)
+    @Form.frame_decorator
+    def row_nav_buttons(self, frame):
         # Row 6: Navigation buttons
         next_button = ctk.CTkButton(
             frame, font=self.font, text="شروع اسکن", command=self.next_form
