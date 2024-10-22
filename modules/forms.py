@@ -71,6 +71,13 @@ class Form(ABC, ctk.CTkFrame):
         pass
 
     def frame_decorator(func):
+        
+        # check if the function that uses the frame_decorator has arg named 'frame':
+        sig = inspect.signature(func)
+        if 'frame' not in sig.parameters:
+            raise ValueError(f"The function {func.__name__} must have an argument named 'frame'.")
+    
+        
         def inner_func(self, row: int, fg_color: str = "transparent", *args, **kwargs):
             try:
                 if fg_color:
@@ -79,10 +86,9 @@ class Form(ABC, ctk.CTkFrame):
                 else:
                     frame = ctk.CTkFrame(self, corner_radius=0)
                     frame.grid(row=row, column=0, sticky="wsen")
-
                 return func(self, frame, *args, **kwargs)
-            
-            except ValueError as e:
+                
+            except ValueError and tk.TclError  as e:
                 # takes all inner_func parameters instead of 'self', 'args' and 'kwargs':
                 inner_func_signature = list(inspect.signature(inner_func).parameters)[1:-2]
                 # takes all func parameters except 'self' and 'frame':
@@ -315,7 +321,7 @@ class Form2(Form):
 
         # Row 1 , 2: Radio buttons for scanning options:
         scan_mode_var = ctk.StringVar(value="whole_system")
-        self.row_radio_whole_system(scan_mode_var)
+        self.row_radio_whole_system(0, scan_mode_var=scan_mode_var)
 
         self.row_radio_specific_path(1, scan_mode_var=scan_mode_var)
 
@@ -329,11 +335,9 @@ class Form2(Form):
         # Row 6: Navigation buttons:
         self.row_5()
 
-    def row_radio_whole_system(self, scan_mode_var):
-        # Create a frame:
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.grid(row=0, column=0, sticky="wsen")
-
+    @wraps(Form.annotate_rows)
+    @Form.frame_decorator
+    def row_radio_whole_system(self, frame, scan_mode_var):
         # Create the radio buttons with labels in Persian and place them using pack
         radio = ctk.CTkRadioButton(
             frame,
@@ -344,7 +348,7 @@ class Form2(Form):
         )
 
         # Align the labels to the right (Persian design)
-        label = ctk.CTkLabel(frame, text="اسکن کل سیستم", anchor="e", font=self.font)
+        label = ctk.CTkLabel(frame, text="اسکن کل سیستم", anchor="e", font=self.font) #bug:!!!!!!
 
         # Use pack instead of grid
         radio.pack(side="right", padx=(0, 5), pady=(20, 0))
