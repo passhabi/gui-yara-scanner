@@ -7,7 +7,7 @@ import time
 if __name__ == "__main__":
     from concurrently import ThreadRunProgram
 else:
-    from modules.concurrently import ThreadRunProgram
+    from concurrently import ThreadRunProgram
 
 
 class YaraScanner(ThreadRunProgram):

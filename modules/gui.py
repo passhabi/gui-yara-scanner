@@ -2,8 +2,10 @@ import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
 from forms import * # Form, Sidebar
-from exceptions import DependencyError
-
+from concurrently import RunWithSysCheck
+from scanner import YaraScanner
+from pathlib import Path
+import os
 
 class UserInterface(ctk.CTk):
 
@@ -19,14 +21,30 @@ class UserInterface(ctk.CTk):
 
         self.window_layout(window_size)
 
+
+        directory = Path("C:/Program Files/Git/")
+        rule_path = Path("./rules.yar")
+
+        scanner = YaraScanner(directory, rule_path, console_print=False)
+        # scanner.start()
+
+        run_with_syscheck = RunWithSysCheck(scanner, os.getpid())
+        # run_with_syscheck.start_with_monitoring()
+        
+        # set run_with_syscheck:
+        Form.set_run_with_syscheck(run_with_syscheck)
+        
         # loads all forms:
         frames = Form.load_forms(self)  # store forms (tk frames)
+        
         # Add sidebar to root window:
         sidebar = Sidebar(self, frames)
         Form.set_sidebar(sidebar)
         
         Form.next_form()  # show the Form1
-        Form.jump_to_form(form_to_switch='Form4')
+        Form.jump_to_form(form_to_switch='Form1')
+        
+        
 
     def window_layout(self, window_size, font="Tahoma"):
         """Config Window Appearance and layout.
@@ -73,4 +91,3 @@ class UserInterface(ctk.CTk):
 if __name__ == "__main__":
     ui = UserInterface()
     ui.mainloop()
-    

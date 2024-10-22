@@ -1,15 +1,13 @@
 from functools import WRAPPER_UPDATES
 import customtkinter as ctk
 from ctkdlib.custom_widgets import CTkMeter
-import tkinter as tk
 from tkinter import END, filedialog
 from abc import ABC, abstractmethod
 import typing
-import tkinter as tk
 from datetime import datetime
 from functools import wraps
 import inspect
-
+from concurrently import RunWithSysCheck
 
 class Form(ABC, ctk.CTkFrame):
     # static variables:
@@ -17,6 +15,10 @@ class Form(ABC, ctk.CTkFrame):
     frames = {}  # keep all forms here.
     sidebar = None
 
+    @classmethod
+    def set_run_with_syscheck(cls, run_with_syscheck:RunWithSysCheck):
+        Form.run_with_syscheck = run_with_syscheck
+        
     @staticmethod
     def load_forms(root_window: ctk.CTk):
         """
@@ -296,7 +298,7 @@ class Form2(Form):
 
         scan_mode_var = ctk.StringVar(value="whole_system")
         self.row_radio_whole_system(0, scan_mode_var=scan_mode_var)
-        self.row_radio_specific_path(1)
+        self.row_radio_specific_path(1, scan_mode_var=scan_mode_var)
 
         self.row_checkbox_deep_scan(2, deep_scan_var=ctk.BooleanVar())
         self.row_dropdown_resource_lvl(3)
@@ -425,7 +427,7 @@ class Form2(Form):
     def row_nav_buttons(self, frame):
         # Row 6: Navigation buttons
         next_button = ctk.CTkButton(
-            frame, font=self.font, text="شروع اسکن", command=self.next_form
+            frame, font=self.font, text="شروع اسکن", command=self.start_scan
         )
 
         back_button = ctk.CTkButton(
@@ -434,6 +436,10 @@ class Form2(Form):
 
         next_button.pack(side="left", pady=10, padx=5)
         back_button.pack(side="left", pady=12, padx=5)
+        
+    def start_scan(self):
+        self.next_form()
+        Form.run_with_syscheck.start_with_monitoring()
 
 
 class Form3(Form):

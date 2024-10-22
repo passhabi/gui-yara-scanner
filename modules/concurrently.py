@@ -4,7 +4,7 @@ import time
 from colorama import Fore
 import threading
 import psutil
-from modules import monkeytest
+import monkeytest
 
 class ThreadRunProgram(ABC):
     def __init__(self):
@@ -145,6 +145,7 @@ class RunWithSysCheck:
                 self.obj.restart(do_decrese_threads=True)
 
     def start_with_monitoring(self):
+        #  a thread for monitoring:
         th_monitor = threading.Thread(
             target=self.monitoring, args=(), name="MonitoringThread", daemon=True
         )
