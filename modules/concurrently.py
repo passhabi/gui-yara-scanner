@@ -144,7 +144,7 @@ class RunWithSysCheck:
             if cpu_usage > 5:  # precent
                 self.obj.restart(do_decrese_threads=True)
 
-    def start_with_monitoring(self):
+    def start(self):
         #  a thread for monitoring:
         th_monitor = threading.Thread(
             target=self.monitoring, args=(), name="MonitoringThread", daemon=True
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     pid = os.getpid()
     run_with_syscheck = RunWithSysCheck(scanner, pid)
 
-    run_with_syscheck.start_with_monitoring()
+    run_with_syscheck.start()
 
     # cs.get_system_info()
     # cs.run_func(pid)

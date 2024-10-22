@@ -29,7 +29,7 @@ class UserInterface(ctk.CTk):
         # scanner.start()
 
         run_with_syscheck = RunWithSysCheck(scanner, os.getpid())
-        # run_with_syscheck.start_with_monitoring()
+        # run_with_syscheck.start()
         
         # set run_with_syscheck:
         Form.set_run_with_syscheck(run_with_syscheck)

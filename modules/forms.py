@@ -439,7 +439,7 @@ class Form2(Form):
         
     def start_scan(self):
         self.next_form()
-        Form.run_with_syscheck.start_with_monitoring()
+        Form.run_with_syscheck.start()
 
 
 class Form3(Form):
