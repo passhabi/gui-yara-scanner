@@ -19,6 +19,7 @@ class Form(ABC, ctk.CTkFrame):
     @classmethod
     def set_run_with_syscheck(cls, run_with_syscheck:RunWithSysCheck):
         Form.run_with_syscheck = run_with_syscheck
+        Form.yara_outputs = run_with_syscheck.obj.yara_outputs_q
         
     @staticmethod
     def load_forms(root_window: ctk.CTk):
@@ -462,13 +463,14 @@ class Form3(Form):
 
     def load_widgets(self, parent):
         self.row_overalinfo(0, None)
-        self.row_checkbox(1, None, ctk.BooleanVar())
+        self.row_checkbox(1, None, ctk.BooleanVar(value=True))
         self.row_progressbar(2)
         # should replace the following two rows to have enough space for row_yara_output!:
-        self.row_scan_info(3)
-        self.row_visual_sysinfo(4)
+        # self.row_scan_info(3)
+        # self.row_visual_sysinfo(4)
 
-        # self.row_yara_output(4)
+        self.row_yara_output(4)
+        
         self.row_nav_buttons(5)
 
     @wraps(Form.annotate_rows)
@@ -527,16 +529,17 @@ class Form3(Form):
 
     @wraps(Form.annotate_rows)
     @Form.frame_decorator
-    def row_checkbox(self, frame, is_show_file=None):
+    def row_checkbox(self, frame, is_show_file_tk_var=None):
         checkbox = ctk.CTkCheckBox(
             frame,
             text="",
-            variable=is_show_file,
+            variable=is_show_file_tk_var,
             width=0,
             checkbox_width=20,
             checkbox_height=20,
+            
         )
-        label = ctk.CTkLabel(frame, text="نمایش فایل‌ها", anchor="e", font=self.font)
+        label = ctk.CTkLabel(frame, text="Yara نمایش خروجی", anchor="e", font=self.font)
 
         label.pack(side="left", padx=self.padx_staring_line_ltr, pady=self.pady)
         checkbox.pack(side="left", padx=self.padx_staring_line, pady=self.pady)
@@ -603,9 +606,11 @@ class Form3(Form):
     @Form.frame_decorator
     def row_yara_output(self, frame):
         # textbox for yara ouput:
-        textbox_yara_output = ctk.CTkTextbox(frame)
-        textbox_yara_output.pack(padx=self.padx, fill="both", expand=True)
-        textbox_yara_output.insert("0.0", "Some example text!\n" * 50)
+        self.textbox_yara_output = ctk.CTkTextbox(frame)
+        self.textbox_yara_output.pack(padx=self.padx, fill="both", expand=True)
+        
+        self.check_queue()
+        
 
     @wraps(Form.annotate_rows)
     @Form.frame_decorator
@@ -665,20 +670,35 @@ class Form3(Form):
             width=10,
             # height=buttons_height,
         )
-        back_button = ctk.CTkButton(
+        cancel_button = ctk.CTkButton(
             frame,
             font=self.font,
             text="انصراف",
-            command=self.previous_form,
             hover_color="red",
             width=10,
+            command=exit, # todos : do you want to exit?
             # height=buttons_height,
         )
 
         next_button.pack(side="left", padx=self.padx, pady=self.pady)
         pause_button.pack(side="left", padx=self.padx, pady=self.pady)
-        back_button.pack(side="left", padx=self.padx, pady=self.pady)
+        cancel_button.pack(side="left", padx=self.padx, pady=self.pady)
 
+    def check_queue(self):
+        # try:
+            # Check for new file paths in the queue
+        while not self.yara_outputs.empty():
+            yara_output = self.yara_outputs.get()
+            if yara_output is None:
+                # End of scan signal, stop checking the queue
+                return
+            self.textbox_yara_output.insert('0.0', yara_output + "\n")
+
+        # except queue.Empty:
+        #     pass
+
+        # Schedule the next queue check after 100ms
+        self.textbox_yara_output.after(100, self.check_queue)
 
 class Form4(Form):
     step_name = "نتیجه"

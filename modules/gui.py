@@ -78,7 +78,7 @@ class UserInterface(ctk.CTk):
 
 if __name__ == "__main__":
     
-    directory = Path("C:/")
+    directory = Path("C:/Program Files/Git")
     rule_path = Path("./rules.yar")
 
     scanner = YaraScanner(directory, rule_path, console_print=False)

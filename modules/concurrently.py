@@ -17,7 +17,7 @@ class ThreadRunProgram(ABC):
         self.futures = []
 
     def trp_start(self):
-        print("trp is running.....")
+        # the ThreadRunProgram subclasses, to assign each task to the workers usually use a for loop which will be a bottle neck for tk ui:
         threading.Thread(target=self.task, name="ThreadRoot_task", daemon=True).start()
 
     @abstractmethod
@@ -84,9 +84,10 @@ class ThreadRunProgram(ABC):
 
 class RunWithSysCheck:
     def __init__(self, object: ThreadRunProgram, pid, console_print=True) -> None:
-        self.task = object
+        self.obj = object        
         self.pid = pid
         self.console_print = console_print
+        
 
     def get_system_info(self):
         # Get CPU usage
@@ -119,7 +120,7 @@ class RunWithSysCheck:
         """
         time.sleep(3)
         tic = time.perf_counter()
-        self.task.trp_start()
+        self.obj.trp_start()
         toc = time.perf_counter()
 
         elapsed_time = toc - tic
@@ -159,9 +160,8 @@ class RunWithSysCheck:
         th_monitor.start()
 
         # start the program
-        # the ThreadRunProgram subclasses, to assign each task to the workers usually uses a for loop which will be a bottle neck for tk loop:
-        self.task.trp_start()
-
+        self.obj.trp_start()
+    
 
 if __name__ == "__main__":
     from scanner import YaraScanner
