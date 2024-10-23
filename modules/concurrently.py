@@ -6,20 +6,25 @@ import threading
 import psutil
 import monkeytest
 
+
 class ThreadRunProgram(ABC):
     def __init__(self):
 
-        self.num_workers = 20  # default nubmer of threads
+        self.num_workers = 20  # default number of threads
         self.inc_dec_workers = 4  # number of threads to increase or decrease
         self.generate_workers(self.num_workers)
         self.isactive = False  # Either if the ThreadPoolExecutor is active or not!
         self.futures = []
 
-    @abstractmethod
-    def start(self):
-        pass
+    def trp_start(self):
+        print("trp is running.....")
+        threading.Thread(target=self.task, name="ThreadRoot_task", daemon=True).start()
 
-    def restart(self, do_decrese_threads: bool = True):
+    @abstractmethod
+    def task():
+        pass
+    
+    def restart(self, is_decrease_threads: bool = True):
         """Restart the current (running) executor with assining more or less threads.
 
         Args:
@@ -27,9 +32,9 @@ class ThreadRunProgram(ABC):
         """
         self.shutdown()
         self.isactive = False
-        
-        if do_decrese_threads is True:
-            self.decrese_threads()
+
+        if is_decrease_threads is True:
+            self.decrease_threads()
         else:
             self.increase_threads()
 
@@ -39,7 +44,7 @@ class ThreadRunProgram(ABC):
             num_workers, thread_name_prefix="ThreadPool" + str(self)
         )
 
-    def assing_task_to_workers(self, func, args):
+    def assign_task_to_workers(self, func, args):
         try:
             future = self.executor.submit(func, args)
             self.futures.append(future)
@@ -56,22 +61,21 @@ class ThreadRunProgram(ABC):
 
     def wait_on_result(self):
         for f in self.futures:
-            f.result()
-        
+            f.result()  # result method of ThreadPoolExecutor!
 
     def shutdown(self):
         self.executor.shutdown(wait=True)
 
     def increase_threads(self):
         self.num_workers = self.num_workers + self.inc_dec_workers
-        print(Fore.GREEN + "Incresing the number of threads" + Fore.RESET)
+        print(Fore.GREEN + "Increasing the number of threads" + Fore.RESET)
         self.generate_workers(self.num_workers)
 
-    def decrese_threads(self):
+    def decrease_threads(self):
         num_workers = self.num_workers - self.inc_dec_workers
-        self.num_worker = num_workers or 1 # check to have at least 1 worker.
-        
-        print(Fore.MAGENTA + "Decresing the number of threads" + Fore.RESET)
+        self.num_worker = num_workers or 1  # check to have at least 1 worker.
+
+        print(Fore.MAGENTA + "Decreasing the number of threads" + Fore.RESET)
         self.generate_workers(self.num_workers)
 
     def __str__(self):
@@ -80,11 +84,10 @@ class ThreadRunProgram(ABC):
 
 class RunWithSysCheck:
     def __init__(self, object: ThreadRunProgram, pid, console_print=True) -> None:
-        self.obj = object
+        self.task = object
         self.pid = pid
         self.console_print = console_print
 
-        
     def get_system_info(self):
         # Get CPU usage
         cpu_usage = psutil.cpu_percent(interval=1)
@@ -96,19 +99,19 @@ class RunWithSysCheck:
 
         # Test Hdd with MonkeyTest:
         args = monkeytest.get_args()
-        
+
         benchmark = monkeytest.Benchmark(
-        file=args.file,
-        write_mb=args.size,
-        write_block_kb=args.write_block_size,
-        read_block_b=args.read_block_size,
+            file=args.file,
+            write_mb=args.size,
+            write_block_kb=args.write_block_size,
+            read_block_b=args.read_block_size,
         ).print_result()
-        
+
         # todo: get result of benchmarkfor further dues.
-        
+
         # print(f"Total RAM: {ram_info.total / (1024 ** 3):.2f} GB")
         # print(f"Used RAM: {ram_info.used / (1024 ** 3):.2f} GB")
-        
+
     def start_benchmark_time(self) -> str:
         """
         Returns:
@@ -116,14 +119,14 @@ class RunWithSysCheck:
         """
         time.sleep(3)
         tic = time.perf_counter()
-        self.obj.start()
+        self.task.trp_start()
         toc = time.perf_counter()
-        
+
         elapsed_time = toc - tic
         return f"{elapsed_time:.2f} # returns time"
 
     def monitoring(self):
-
+        """It runs the object task with monitoring. signals the task to use more threads or less."""
         process = psutil.Process(self.pid)
 
         while True:
@@ -141,24 +144,23 @@ class RunWithSysCheck:
                     f"CPU Usage:{cpu_usage}%  RAM Usage:{ram_usage:0.1f}%  DISK:{bytes_diff/1024:.2f} KB/s"
                 )
 
-            if cpu_usage > 5:  # precent
-                self.obj.restart(do_decrese_threads=True)
+            # if cpu_usage > 20:  # percent
+            #     self.task.restart(is_decrease_threads=True)
 
-    def start(self):
-        #  a thread for monitoring:
+            # if cpu_usage < 10:  # percent
+            #     self.task.restart(is_decrease_threads=False)
+
+    def start_task(self):
+        #  a thread for monitoring and starting:
         th_monitor = threading.Thread(
-            target=self.monitoring, args=(), name="MonitoringThread", daemon=True
+            target=self.monitoring, name="MonitoringThread", daemon=True
         )
-
         # start monitoring the system
         th_monitor.start()
-        
+
         # start the program
-        result = self.obj.start()
-        
-        print("finish running!")
-        
-        return result
+        # the ThreadRunProgram subclasses, to assign each task to the workers usually uses a for loop which will be a bottle neck for tk loop:
+        self.task.trp_start()
 
 
 if __name__ == "__main__":
@@ -175,7 +177,7 @@ if __name__ == "__main__":
     pid = os.getpid()
     run_with_syscheck = RunWithSysCheck(scanner, pid)
 
-    run_with_syscheck.start()
+    run_with_syscheck.start_task()
 
     # cs.get_system_info()
     # cs.run_func(pid)

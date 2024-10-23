@@ -8,7 +8,8 @@ from datetime import datetime
 from functools import wraps
 import inspect
 from concurrently import RunWithSysCheck
-
+import time 
+import threading
 class Form(ABC, ctk.CTkFrame):
     # static variables:
     curr_form_num = 0  # keep track of active Form
@@ -439,7 +440,8 @@ class Form2(Form):
         
     def start_scan(self):
         self.next_form()
-        Form.run_with_syscheck.start()
+        Form.run_with_syscheck.start_task()
+        
 
 
 class Form3(Form):

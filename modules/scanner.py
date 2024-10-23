@@ -30,21 +30,19 @@ class YaraScanner(ThreadRunProgram):
         self.directory = Path(directory)
         self.rule = yara.compile(filepath=str(rule_path), includes=False)
 
-        self.console_print = (
-            console_print  # print the path of the file is checking in console.
-        )
+        self.console_print = console_print  # print the path of the file is checking in console.
 
-        self.file_counter = 0  # count the number of file thats we are scaning.
+        self.file_counter = 0  # count the number of file thats we are scanning.
         # self.logger = logging.getLogger(__name__)
         
     def scan_directory(self):
         """Scan files in the directory."""
         for file_path in self.directory.rglob("*"):
-            self.assing_task_to_workers(self.scan_file, file_path)
+            self.assign_task_to_workers(self.scan_file, file_path)
             
-
-    def start(self) -> int :
-        """Start scaning the given directory.
+            
+    def task(self) -> int :
+        """Start scanning the given directory.
 
         Returns:
             int: Returns number of scanned files.
@@ -52,10 +50,10 @@ class YaraScanner(ThreadRunProgram):
         print(Fore.GREEN + f"Scanning {self.directory} ...", Fore.RESET)
         self.scan_directory()
         
-        self.wait_on_result()
+        # self.wait_on_result()
         
         # return number of scanned files after done scanning:
-        return self.file_counter
+        # return self.file_counter
         
         
     def scan_file(self, file_path: Path):
@@ -65,7 +63,7 @@ class YaraScanner(ThreadRunProgram):
         if file_path.is_file():  # pass if is a directory.
             self.file_counter += 1
             
-            # todo: remove this 2 line check to get better preformance:
+            # todo: remove this 2 line check to get better performance:
             if self.console_print:
                 print(file_path)
 
@@ -100,7 +98,7 @@ if __name__ == "__main__":
     rule_path = Path("./rules.yar")
 
     scanner = YaraScanner(directory, rule_path)
-    scanner.start()
+    scanner.trp_start()
 
     toc = time.perf_counter()
     print(Fore.RED + f"{toc - tic:.2f}sec")

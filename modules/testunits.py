@@ -16,7 +16,7 @@ class TestYaraScanner(unittest.TestCase):
         scanner = YaraScanner(directory, rule_path, console_print=False)
         run_with_syscheck = RunWithSysCheck(scanner, os.getpid())
 
-        yara_output = run_with_syscheck.start()
+        yara_output = run_with_syscheck.start_task()
         
         test_output = 0
         # compute number of fiels;

@@ -9,7 +9,7 @@ import os
 
 class UserInterface(ctk.CTk):
 
-    def __init__(self):
+    def __init__(self, run_with_syscheck: RunWithSysCheck):
         super().__init__()
         # treat windows, app or root as self!
 
@@ -20,16 +20,6 @@ class UserInterface(ctk.CTk):
         self.font_bold = ctk.CTkFont(font, 14, "bold")
 
         self.window_layout(window_size)
-
-
-        directory = Path("C:/Program Files/Git/")
-        rule_path = Path("./rules.yar")
-
-        scanner = YaraScanner(directory, rule_path, console_print=False)
-        # scanner.start()
-
-        run_with_syscheck = RunWithSysCheck(scanner, os.getpid())
-        # run_with_syscheck.start()
         
         # set run_with_syscheck:
         Form.set_run_with_syscheck(run_with_syscheck)
@@ -44,8 +34,6 @@ class UserInterface(ctk.CTk):
         Form.next_form()  # show the Form1
         Form.jump_to_form(form_to_switch='Form1')
         
-        
-
     def window_layout(self, window_size, font="Tahoma"):
         """Config Window Appearance and layout.
 
@@ -89,5 +77,16 @@ class UserInterface(ctk.CTk):
 
 
 if __name__ == "__main__":
-    ui = UserInterface()
+    
+    directory = Path("C:/")
+    rule_path = Path("./rules.yar")
+
+    scanner = YaraScanner(directory, rule_path, console_print=False)
+    # scanner.start()
+
+    run_with_syscheck = RunWithSysCheck(scanner, os.getpid())
+    # run_with_syscheck.start_task()
+    
+    ui = UserInterface(run_with_syscheck)
     ui.mainloop()
+    
