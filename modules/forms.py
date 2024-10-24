@@ -466,10 +466,10 @@ class Form3(Form):
         self.row_checkbox(1, None, ctk.BooleanVar(value=True))
         self.row_progressbar(2)
         # should replace the following two rows to have enough space for row_yara_output!:
-        # self.row_scan_info(3)
-        # self.row_visual_sysinfo(4)
+        self.row_scan_info(3)
+        self.row_visual_sysinfo(4)
 
-        self.row_yara_output(4)
+        # self.row_yara_output(4)
         
         self.row_nav_buttons(5)
 
@@ -606,38 +606,42 @@ class Form3(Form):
     @Form.frame_decorator
     def row_yara_output(self, frame):
         # textbox for yara ouput:
-        self.textbox_yara_output = ctk.CTkTextbox(frame)
-        self.textbox_yara_output.pack(padx=self.padx, fill="both", expand=True)
+        textbox_yara_output = ctk.CTkTextbox(frame)
+        textbox_yara_output.pack(padx=self.padx, fill="both", expand=True)
         
-        self.check_queue()
-        
+        def check_queue():
+            # Check for new file paths in the queue
+            while not self.yara_outputs.empty():
+                yara_output = self.yara_outputs.get()
+                if yara_output is None:
+                    # End of scan signal, stop checking the queue
+                    return
+                textbox_yara_output.insert('0.0', yara_output + "\n")
 
+            textbox_yara_output.after(100, check_queue)
+    
+        check_queue()
+        
     @wraps(Form.annotate_rows)
     @Form.frame_decorator
     def row_visual_sysinfo(self, frame):
         # cpu vs ram vs disk visual info:
         frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
         frame.rowconfigure((0, 1), weight=1)
-        # cpu:
-        cpu_meter = CTkMeter(
-            frame,
-            background="transparent",
-            size=70,
-            value=80,
-        )
+        
+        # cpu
+        cpu_meter = CTkMeter(frame, background="transparent", size=70,  scroll='disable', from_=0, to=101)
         cpu_meter.grid(row=0, column=1, sticky="wesn")
-        cpu_meter.textvariable.set("80%")  # To set the text
 
         # ram:
-        ram_meter = CTkMeter(frame, background="transparent", size=70, value=20)
+        ram_meter = CTkMeter(frame, background="transparent", size=70, scroll='disable', from_=0, to=101)
         ram_meter.grid(row=0, column=2, sticky="nswe")
-        ram_meter.textvariable.set("20%")  # To set the text
 
         # disk:
-        disk_meter = CTkMeter(frame, background="transparent", size=70, value=10)
+        disk_meter = CTkMeter(frame, background="transparent", size=70, scroll='disable', from_=0, to=101)
         disk_meter.grid(row=0, column=3, sticky="nswe")
-        disk_meter.textvariable.set("10%")  # To set the text
-
+        
+            
         # set labels:
         cpu_meter_label = ctk.CTkLabel(frame, text="CPU")
         ram_meter_label = ctk.CTkLabel(frame, text="RAM")
@@ -647,6 +651,26 @@ class Form3(Form):
         cpu_meter_label.grid(row=1, column=1, sticky="wesn")
         ram_meter_label.grid(row=1, column=2, sticky="nswe")
         disk_meter_label.grid(row=1, column=3, sticky="nswe")
+        
+        # connect CtkMeters with RunWithSysCheck:
+        def update_resources():
+            
+            # get information of resoruces form RunWithSysCheck:
+            cpu, ram, disk = Form.run_with_syscheck.resources_status
+            
+            cpu_meter.set(min(100, cpu))
+            cpu_meter.textvariable.set(str(cpu) + "%")
+            
+            ram_meter.set(ram)
+            ram_meter.textvariable.set(str(ram) + "%")
+            
+            disk_meter.set(disk)
+            disk_meter.textvariable.set(str(disk) + " KB/s")
+            
+            frame.after(500, update_resources)
+        
+        update_resources()
+        
 
     @wraps(Form.annotate_rows)
     @Form.frame_decorator
@@ -676,7 +700,7 @@ class Form3(Form):
             text="انصراف",
             hover_color="red",
             width=10,
-            command=exit, # todos : do you want to exit?
+            # command=exit, # todos : do you want to exit?
             # height=buttons_height,
         )
 
@@ -684,21 +708,6 @@ class Form3(Form):
         pause_button.pack(side="left", padx=self.padx, pady=self.pady)
         cancel_button.pack(side="left", padx=self.padx, pady=self.pady)
 
-    def check_queue(self):
-        # try:
-            # Check for new file paths in the queue
-        while not self.yara_outputs.empty():
-            yara_output = self.yara_outputs.get()
-            if yara_output is None:
-                # End of scan signal, stop checking the queue
-                return
-            self.textbox_yara_output.insert('0.0', yara_output + "\n")
-
-        # except queue.Empty:
-        #     pass
-
-        # Schedule the next queue check after 100ms
-        self.textbox_yara_output.after(100, self.check_queue)
 
 class Form4(Form):
     step_name = "نتیجه"
@@ -850,7 +859,7 @@ class Form4(Form):
             frame,
             font=self.font,
             text="بستن",
-            command=exit,
+            # command=exit,
             width=90,
             height=buttons_height,
             hover_color="red",

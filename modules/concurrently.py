@@ -23,7 +23,7 @@ class ThreadRunProgram(ABC):
     @abstractmethod
     def task():
         pass
-    
+
     def restart(self, is_decrease_threads: bool = True):
         """Restart the current (running) executor with assining more or less threads.
 
@@ -84,11 +84,30 @@ class ThreadRunProgram(ABC):
 
 class RunWithSysCheck:
     def __init__(self, object: ThreadRunProgram, pid, console_print=True) -> None:
-        self.obj = object        
+        self.obj = object
         self.pid = pid
         self.console_print = console_print
-        
+        self._resources_status = (
+            0,  # cpu
+            0,  # ram
+            0,  # disk
+        )
 
+    @property
+    def resources_status(self):
+        return self._resources_status
+
+    # Setter for name
+    @resources_status.setter
+    def resources_status(self, new_status):
+        if isinstance(new_status, tuple) and len(new_status) == 3:
+            cpu, ram, disk = new_status
+            # fixme: cpu is not correct percent. quick fix => min(cpu, 100)
+            self._resources_status = int(min(cpu, 100)), int(ram), int(disk)
+        else:
+            raise ValueError("resources_status must be a tuple with three elements (cpu, ram, disk).")
+        
+        
     def get_system_info(self):
         # Get CPU usage
         cpu_usage = psutil.cpu_percent(interval=1)
@@ -135,7 +154,7 @@ class RunWithSysCheck:
             ram_usage = process.memory_percent()
 
             tic_disk_io = process.io_counters()
-            time.sleep(1)
+            time.sleep(0.2)
             toc_disk_io = process.io_counters()
 
             bytes_diff = toc_disk_io.read_bytes - tic_disk_io.read_bytes
@@ -145,8 +164,10 @@ class RunWithSysCheck:
                     f"CPU Usage:{cpu_usage}%  RAM Usage:{ram_usage:0.1f}%  DISK:{bytes_diff/1024:.2f} KB/s"
                 )
 
+            self.resources_status = (cpu_usage, ram_usage, bytes_diff / 1024)
+
             # if cpu_usage > 20:  # percent
-            #     self.task.restart(is_decrease_threads=True)
+            #     self.task.restart(is_decrease_threads=True)s
 
             # if cpu_usage < 10:  # percent
             #     self.task.restart(is_decrease_threads=False)
@@ -161,7 +182,7 @@ class RunWithSysCheck:
 
         # start the program
         self.obj.trp_start()
-    
+
 
 if __name__ == "__main__":
     from scanner import YaraScanner
